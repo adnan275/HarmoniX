@@ -38,7 +38,8 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Auto-sync logs & runtime
-.auto_sync.log
-.auto_sync.pid
+# Auto-sync scripts, logs & runtime
+auto_sync.sh
+.auto_sync*
+
 
