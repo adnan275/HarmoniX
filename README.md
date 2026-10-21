@@ -25,42 +25,82 @@ Sound is fundamentally physical variations in atmospheric air pressure over time
 ## 🏗️ 2. End-to-End System Architecture
 
 ```mermaid
-flowchart TD
-    subgraph INPUT["🎵 1. Raw Audio Input"]
-        A["Unseen Audio File (.mp3 / .wav)"]
-        A --> B["Audio Preprocessing & Validation<br/>(Resample 22.05kHz, Mono, Normalize)"]
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '13px', 'lineColor': '#64748b' }}}%%
+flowchart TB
+
+    subgraph S1["🎧 STAGE 1: RAW AUDIO INGESTION & DSP PIPELINE"]
+        direction LR
+        RAW["📁 Unseen Audio File<br/><code>.mp3</code> / <code>.wav</code> (Any Source)"]:::inputNode
+        PRE["🎛️ Audio Preprocessor<br/>• Resample: 22.05 kHz<br/>• Mono Conversion<br/>• Peak Decibel Normalization"]:::inputNode
+        RAW ==>|"Decoded PCM Waveform"| PRE
     end
 
-    subgraph DUAL_BRANCH["🔬 2. Dual-Branch Feature Engineering"]
-        B --> C1["Branch A: Physics & DSP Engine"]
-        B --> C2["Branch B: Spectroscopy Engine"]
+    PRE ==>|"Continuous Time-Domain Wave x(t)"| S2A
+    PRE ==>|"Windowed STFT Frames"| S2B
 
-        C1 --> D1["Acoustic Descriptors:<br/>• Timbre: MFCCs (1-13)<br/>• Warmth: Spectral Centroid<br/>• Energy: RMS & Zero-Crossing Rate<br/>• Harmony: Chroma & Dissonance Index"]
-        C2 --> D2["Log-Mel-Spectrogram Generation<br/>(2D Time-Frequency Image Heatmap)"]
+    subgraph S2A["🔬 BRANCH A: PHYSICS & ACOUSTIC FEATURE EXTRACTION (AML)"]
+        direction TB
+        subgraph P1["⚡ Wave Mechanics & Energy"]
+            F_ENERGY["• RMS Energy: Wave Amplitude<br/>• Zero-Crossing Rate: Frequency Indicator (v = fλ)"]:::dspNode
+        end
+        subgraph P2["🎼 Timbre & Spectrum"]
+            F_SPEC["• 13 MFCCs: Acoustic Texture<br/>• Spectral Centroid: Warmth / Brightness<br/>• Spectral Rolloff & Bandwidth"]:::dspNode
+        end
+        subgraph P3["🎶 Harmony & Consonance"]
+            F_HARM["• Chroma STFT: Harmonic Pitch Distribution<br/>• Harmonic-to-Noise Ratio (HNR)<br/>• Sensory Dissonance Index (Roughness)"]:::dspNode
+        end
+        VEC["📊 1D Engineered Feature Vector<br/><code>[x₁, x₂, x₃, ..., xₙ] ∈ ℝ³⁴</code>"]:::featNode
+        P1 & P2 & P3 ==> VEC
     end
 
-    subgraph MODELS["🧠 3. Predictive Modeling"]
-        D1 --> E1["Phase 1: Advanced Machine Learning<br/>• Ridge Regression (Baseline)<br/>• Random Forest Regressor<br/>• XGBoost / LightGBM"]
-        D2 --> E2["Phase 2: Deep Learning<br/>• PyTorch 2D CNN<br/>• Spatial Convolutions + Regularization"]
+    subgraph S2B["👁️ BRANCH B: AUDIO SPECTROSCOPY & COMPUTER VISION (DL)"]
+        direction TB
+        MEL["🌈 Log-Mel-Spectrogram Generator<br/>• FFT Window Size: 2048 | Hop: 512<br/>• 128 Mel-frequency Bins (Log-scale)<br/>• Output: 2D Energy Heatmap (Image)"]:::specNode
+        
+        subgraph CNN_ARCH["🧠 PyTorch 2D CNN Architecture"]
+            direction TB
+            C1["Conv2D Block 1: 32 Filters (3x3) + BatchNorm + ReLU + MaxPool"]:::dlNode
+            C2["Conv2D Block 2: 64 Filters (3x3) + BatchNorm + ReLU + MaxPool"]:::dlNode
+            C3["Conv2D Block 3: 128 Filters (3x3) + AdaptiveAvgPool + Dropout(0.4)"]:::dlNode
+            C1 ==> C2 ==> C3
+        end
+        EMB["🧩 2D Latent Audio Embedding<br/><code>e_cnn ∈ ℝ⁶⁴</code>"]:::featNode
+        MEL ==> CNN_ARCH ==> EMB
     end
 
-    subgraph HYBRID["⚡ 4. Hybrid Multi-Modal Fusion"]
-        E1 --> F["Late Fusion Ensemble<br/>(Physics Features + CNN Embeddings)"]
-        E2 --> F
+    subgraph S3["🏆 STAGE 3: PREDICTIVE MODELING & BENCHMARKING"]
+        direction LR
+        subgraph ML_MODELS["Phase 1: Advanced Machine Learning"]
+            M1["Linear / Ridge Regressor<br/>(Baseline Benchmark)"]:::mlNode
+            M2["Random Forest Regressor<br/>(Non-linear Ensemble)"]:::mlNode
+            M3["XGBoost / LightGBM<br/>(Gradient Tree Boosting)"]:::mlNode
+        end
+        VEC ==> ML_MODELS
     end
 
-    subgraph OUTPUT["📊 5. Output & Inference"]
-        F --> G["Streamlit Interactive Application"]
-        G --> H1["Continuous Valence Estimate (0.0 - 1.0)"]
-        G --> H2["Visual Mel-Spectrogram Display"]
-        G --> H3["Acoustic Physics Breakdown Radar"]
+    subgraph S4["⚡ STAGE 4: HYBRID MULTI-MODAL FUSION (BONUS MARKS)"]
+        direction TB
+        FUSION{{"✨ Late-Fusion Gated Ensemble<br/>y_pred = α · ŷ_AML + (1-α) · ŷ_CNN<br/>(Subject to Held-Out Validation Tuning)"}}:::fusionNode
+        ML_MODELS ==>|"Tabular Prediction ŷ_AML"| FUSION
+        EMB ==>|"Visual Latent Features"| FUSION
     end
 
-    style INPUT fill:#1a365d,stroke:#63b3ed,stroke-width:2px,color:#fff
-    style DUAL_BRANCH fill:#2c3e50,stroke:#4fd1c5,stroke-width:2px,color:#fff
-    style MODELS fill:#2d3748,stroke:#f6ad55,stroke-width:2px,color:#fff
-    style HYBRID fill:#4a154b,stroke:#b794f4,stroke-width:2px,color:#fff
-    style OUTPUT fill:#1c4532,stroke:#68d391,stroke-width:2px,color:#fff
+    subgraph S5["💻 STAGE 5: STREAMLIT INTERACTIVE APP & EXPLAINABILITY"]
+        direction LR
+        OUT1["🎯 Perceived Valence Score<br/>(0.00 to 1.00 Continuous Rating)"]:::outNode
+        OUT2["📈 Real-Time Mel-Spectrogram<br/>(Interactive Visual Heatmap)"]:::outNode
+        OUT3["🧭 Physics Radar Breakdown<br/>(Harmony vs Warmth vs Dynamics)"]:::outNode
+        FUSION ==> OUT1 & OUT2 & OUT3
+    end
+
+    classDef inputNode fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef dspNode fill:#042f2e,stroke:#14b8a6,stroke-width:1.5px,color:#ccfbf1;
+    classDef specNode fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
+    classDef dlNode fill:#311042,stroke:#c084fc,stroke-width:1.5px,color:#f3e8ff;
+    classDef mlNode fill:#422006,stroke:#f59e0b,stroke-width:1.5px,color:#fef3c7;
+    classDef featNode fill:#1e293b,stroke:#94a3b8,stroke-width:2px,color:#f1f5f9;
+    classDef fusionNode fill:#4c0519,stroke:#fb7185,stroke-width:2.5px,color:#ffe4e6;
+    classDef outNode fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ecfdf5;
 ```
 
 ---
