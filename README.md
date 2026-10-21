@@ -182,9 +182,52 @@ python src/eda_analysis.py
 
 ---
 
+
 ## 🔮 7. Phase 2 Roadmap (Post-Evaluation)
 Following the Phase 1 evaluation, the team will implement **Phase 2: Deep Learning & Hybrid Approach**:
 * **Audio Spectroscopy:** Log-Mel-Spectrogram image generation using Librosa.
 * **Deep Learning Model:** PyTorch 2D Convolutional Neural Network (CNN) trained on spectrogram representations.
 * **Hybrid Multi-Modal Fusion:** Combining tabular physics features with CNN latent embeddings for additional evaluation bonus marks.
 * **Interactive Web Application:** Streamlit-based UI for uploading any unseen audio and receiving real-time predictions and acoustic breakdowns.
+## ⚠️ 7. Scientific Framing & Caveats
+1. **Valence vs. Universal Pleasantness:** Valence measures perceived emotional positivity vs. negativity. Musical taste is multifaceted and influenced by cultural background, familiarity, and personal psychology; this model predicts objective acoustic-driven perceived valence, not universal artistic value.
+2. **Audio-Only Modeling:** Lyrics and linguistic semantics are intentionally excluded to isolate acoustic and wave mechanics.
+
+---
+
+## 📜 8. License & Acknowledgments
+* **Primary Dataset:** PMEmo Dataset (*Hui Zhang et al.*)
+* Developed as part of the **Computer Science & Artificial Intelligence (CSAI)** curriculum.
+
+
+
+
+### Acoustic / Physics-Informed Feature Extraction
+
+The HarmoniX acoustic feature-extraction module is implemented in `src/feature_extraction.py`. It reads the matched audio metadata from `data/processed/all_matched_metadata.csv`, processes each available audio file, and exports a fixed-length feature vector for each successfully processed song.
+
+**Extracted features (34 dimensions):**
+
+- **MFCCs (13):** Mean values of 13 Mel-frequency cepstral coefficients.
+- **Spectral features (5):** Spectral centroid, bandwidth, roll-off, contrast, and flatness.
+- **Energy and temporal features (2):** Root-mean-square (RMS) energy and zero-crossing rate.
+- **Chroma features (12):** Mean values of the 12 Chroma STFT components.
+- **Harmonic feature (1):** A simplified harmonic-to-noise ratio (HNR) estimate.
+- **Psychoacoustic feature (1):** A simplified sensory-dissonance estimate.
+
+The module converts frame-level measurements into fixed-length song-level features by calculating their means. It also preserves available metadata, including `music_id`, valence, arousal, and the existing data split.
+
+**Input:** `data/processed/all_matched_metadata.csv` and its referenced audio files.
+
+**Output:** `data/processed/features_physics.csv`
+
+Run the module from the project root:
+
+```bash
+python src/feature_extraction.py
+```
+
+The HNR and sensory-dissonance calculations are simplified estimates and should not be interpreted as validated psychoacoustic measurements. The included synthetic audio samples are intended for implementation testing; evaluation of emotion prediction requires the official PMEmo dataset.
+
+For machine-learning experiments, fit any feature scaler or other learned preprocessing transformation using the training split only, then apply the fitted transformation to validation and test data.
+
