@@ -1,4 +1,4 @@
 Model,CV_RMSE,Val_MAE,Val_RMSE,Val_R2,Val_Pearson_r,Best_Params
-Ridge,0.0515,0.0529,0.0624,0.9388,0.97,{'model__alpha': 10.0}
-Random_Forest,0.0506,0.0527,0.0622,0.9392,0.9701,"{'model__max_depth': 3, 'model__max_features': 'sqrt', 'model__min_samples_leaf': 2, 'model__min_samples_split': 2, 'model__n_estimators': 50}"
-XGBoost,0.0499,0.0521,0.0625,0.9387,0.9707,"{'model__subsample': 1.0, 'model__reg_lambda': 5.0, 'model__reg_alpha': 0.1, 'model__n_estimators': 100, 'model__max_depth': 2, 'model__learning_rate': 0.05, 'model__colsample_bytree': 1.0}"
+Ridge,0.1138,0.0979,0.1297,0.4123,0.6504,{'model__alpha': 0.1}
+Random_Forest,0.1166,0.0978,0.1275,0.432,0.6773,"{'model__max_depth': None, 'model__max_features': 'sqrt', 'model__min_samples_leaf': 2, 'model__min_samples_split': 2, 'model__n_estimators': 50}"
+XGBoost,0.1174,0.0943,0.1259,0.4464,0.6738,"{'model__subsample': 0.7, 'model__reg_lambda': 10.0, 'model__reg_alpha': 1.0, 'model__n_estimators': 150, 'model__max_depth': 3, 'model__learning_rate': 0.1, 'model__colsample_bytree': 0.85}"
