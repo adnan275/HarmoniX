@@ -41,10 +41,12 @@ class DataLoaderConfig:
     
     # Expected target column candidates in PMEmo
     VALENCE_TARGET_CANDIDATES = [
-        "valence_mean", "Valence_mean", "valence", "Valence", "valence_mu"
+        "valence_mean", "Valence_mean", "valence", "Valence", "valence_mu",
+        "Valence(mean)"  # PMEmo2019 static_annotations.csv
     ]
     AROUSAL_TARGET_CANDIDATES = [
-        "arousal_mean", "Arousal_mean", "arousal", "Arousal", "arousal_mu"
+        "arousal_mean", "Arousal_mean", "arousal", "Arousal", "arousal_mu",
+        "Arousal(mean)"  # PMEmo2019 static_annotations.csv
     ]
 
 
