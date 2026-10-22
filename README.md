@@ -231,3 +231,44 @@ The HNR and sensory-dissonance calculations are simplified estimates and should 
 
 For machine-learning experiments, fit any feature scaler or other learned preprocessing transformation using the training split only, then apply the fitted transformation to validation and test data.
 
+
+### Feature Analysis & Explainability
+
+The feature-analysis module is implemented in `src/feature_analysis.py`. It studies how the 34 acoustic features relate to human-rated valence and how the tuned Random Forest and XGBoost models use them.
+
+**Leakage policy:** correlation statistics use the training split only; permutation importance and SHAP use the validation split; the test split is never read.
+
+**Analyses:**
+
+- **Feature–valence correlation:** Pearson r (with Fisher-z 95% CI) and Spearman ρ for every feature, Benjamini–Hochberg FDR correction across the 34 tests, and a partial Spearman correlation controlling for arousal.
+- **Correlation heatmaps:** a clustered Spearman matrix of all features plus valence/arousal, and an annotated matrix of the physics-informed descriptors.
+- **Focused analyses:** sensory dissonance vs valence and spectral centroid vs valence (OLS fit with 95% CI, quantile-binned means, points coloured by arousal).
+- **Dissonance validity check:** the dissonance estimator is compared with Plomp–Levelt theory on pure-tone dyads, then probed on 200 real training songs to see what it tracks.
+- **Model explanations:** impurity/gain importance, permutation importance (30 repeats), SHAP beeswarm plots, SHAP by feature family, and SHAP dependence plots for dissonance and spectral centroid.
+
+**Outputs:** `reports/figures/04_*.png` to `15_*.png`, `reports/feature_valence_correlations.csv`, `reports/feature_correlation_matrix.csv`, `reports/feature_importance.csv`, `reports/dissonance_estimator_probe.csv`, and `reports/feature_analysis_summary.md` (all numbers behind the figures).
+
+Run it from the project root after `data_loader.py`, `feature_extraction.py` and `train_ml.py`:
+
+```bash
+python src/feature_analysis.py
+```
+
+#### Key findings (PMEmo2019, 767 songs: 536 train / 115 validation)
+
+1. **Valence and arousal are strongly linked (ρ = 0.69).** 24 of 34 features correlate with valence after FDR correction, and 19 have a significant partial correlation once arousal is controlled. Many apparent "valence" features are really tracking how energetic a song is.
+2. **The strongest single correlate is MFCC 1 (ρ = 0.61; partial ρ given arousal = 0.23).** MFCC 1 summarises overall spectral level and is closely tied to arousal (ρ = 0.71). Spectral flatness (ρ = 0.50), zero-crossing rate (ρ = 0.49) and spectral contrast (ρ = −0.45) follow, but most of their association disappears once arousal is controlled.
+3. **Spectral centroid (brightness) does not relate to valence independently of arousal.** The raw association is clear (ρ = 0.40, q < 10⁻²⁰), but the partial correlation is ρ = −0.00 (q = 0.97). In the XGBoost model, centroid also has one of the smallest SHAP contributions (mean |SHAP| = 0.001). Brighter songs are rated more positive because they tend to be more energetic, not because brightness itself carries valence.
+4. **The sensory-dissonance estimate correlates *positively* with valence (ρ = 0.32; partial ρ given arousal = 0.33).** This is the opposite of the "dissonance sounds unpleasant" hypothesis, and the validity checks explain why it should not be read that way:
+   - On pure-tone dyads the estimator matches Plomp–Levelt theory closely at A4 (440 Hz). However, it cannot resolve partials closer than about 2 FFT bins (~20 Hz), so it reads zero for a minor second at A3 (220 Hz). Low-register roughness is invisible to it (`15_dissonance_estimator_check.png`).
+   - On real songs, the estimate correlates ρ = 0.97 with "peak balance", which is how evenly energy is spread across the 30 strongest spectral peaks. Computing it on 2-second windows instead of the whole clip changes little (ρ = 0.90 with the whole-clip value), and peak balance itself correlates with valence (ρ = 0.33).
+   - The feature therefore mostly captures spectral density (fuller, more evenly balanced arrangements), not musical interval roughness. Its link to valence says something about arrangement and production in PMEmo, not about consonance.
+5. **The models agree on what matters.** For both Random Forest and XGBoost, the top three features by permutation importance and by mean |SHAP| are MFCC 1, spectral contrast and spectral flatness. At family level, spectral-shape and MFCC (timbre) features contribute the most; energy/temporal features contribute the least, because their information is already carried by MFCC 1 and spectral flatness.
+6. **Chroma results need caution.** Mean energy in some pitch classes (F#, C#, D#, G#) is negatively associated with valence even after controlling for arousal. Chroma means are not key-invariant, so this most likely reflects which keys happy and sad songs happen to use in this dataset, not a general acoustic rule.
+
+#### Interpretation caveats
+
+- All results are statistical associations in one dataset of popular-music chorus excerpts (PMEmo). They do not show that any acoustic property *causes* a song to be perceived as more positive.
+- Correlated features share credit in permutation importance and SHAP, so a low score does not mean a feature is unrelated to valence (see the heatmaps).
+- HNR and sensory dissonance are simplified estimates. HNR is undefined (NaN) for 6 songs, and its Pearson and Spearman correlations with valence disagree in sign, so it is not a reliable descriptor here.
+- Valence is a proxy for pleasantness-related perception, not a universal measure of musical pleasantness.

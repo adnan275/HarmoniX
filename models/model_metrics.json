@@ -1,31 +1,31 @@
 {
   "target": "valence",
-  "n_train": 42,
-  "n_val": 9,
-  "n_test_reserved": 9,
+  "n_train": 536,
+  "n_val": 115,
+  "n_test_reserved": 116,
   "models": {
     "Ridge": {
-      "cv_rmse": 0.0515,
+      "cv_rmse": 0.1138,
       "val_metrics": {
-        "MAE": 0.0529,
-        "RMSE": 0.0624,
-        "R2": 0.9388,
-        "Pearson_r": 0.97
+        "MAE": 0.0979,
+        "RMSE": 0.1297,
+        "R2": 0.4123,
+        "Pearson_r": 0.6504
       },
       "best_params": {
-        "alpha": 10.0
+        "alpha": 0.1
       }
     },
     "Random_Forest": {
-      "cv_rmse": 0.0506,
+      "cv_rmse": 0.1166,
       "val_metrics": {
-        "MAE": 0.0527,
-        "RMSE": 0.0622,
-        "R2": 0.9392,
-        "Pearson_r": 0.9701
+        "MAE": 0.0978,
+        "RMSE": 0.1275,
+        "R2": 0.432,
+        "Pearson_r": 0.6773
       },
       "best_params": {
-        "max_depth": 3,
+        "max_depth": null,
         "max_features": "sqrt",
         "min_samples_leaf": 2,
         "min_samples_split": 2,
@@ -33,23 +33,23 @@
       }
     },
     "XGBoost": {
-      "cv_rmse": 0.0499,
+      "cv_rmse": 0.1174,
       "val_metrics": {
-        "MAE": 0.0521,
-        "RMSE": 0.0625,
-        "R2": 0.9387,
-        "Pearson_r": 0.9707
+        "MAE": 0.0943,
+        "RMSE": 0.1259,
+        "R2": 0.4464,
+        "Pearson_r": 0.6738
       },
       "best_params": {
-        "subsample": 1.0,
-        "reg_lambda": 5.0,
-        "reg_alpha": 0.1,
-        "n_estimators": 100,
-        "max_depth": 2,
-        "learning_rate": 0.05,
-        "colsample_bytree": 1.0
+        "subsample": 0.7,
+        "reg_lambda": 10.0,
+        "reg_alpha": 1.0,
+        "n_estimators": 150,
+        "max_depth": 3,
+        "learning_rate": 0.1,
+        "colsample_bytree": 0.85
       }
     }
   },
-  "best_model": "Random_Forest"
+  "best_model": "XGBoost"
 }

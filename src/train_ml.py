@@ -5,7 +5,7 @@ Author: Bhoomi
 This module handles:
 1. Loading physics and acoustic feature matrix (features_physics.csv).
 2. Leakage-free data partitioning (train/val splits).
-3. Pipeline construction with StandardScaler to prevent fold leakage.
+3. Pipeline construction with median imputation and StandardScaler to prevent fold leakage.
 4. Baseline Ridge Regression modeling and hyperparameter tuning.
 5. Non-linear ensemble modeling with Random Forest Regressor.
 6. Gradient boosting with XGBoost Regressor.
@@ -26,6 +26,7 @@ import pandas as pd
 from scipy.stats import pearsonr
 import joblib
 
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge
@@ -199,6 +200,7 @@ def train_and_tune_ridge(
     logger.info("--- Tuning Model 1: Ridge Regression (Baseline Regularized Linear) ---")
     
     pipe = Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),  # e.g. HNR is NaN when no pitch period is found
         ("scaler", StandardScaler()),
         ("model", Ridge(random_state=MLConfig.RANDOM_STATE))
     ])
@@ -234,6 +236,7 @@ def train_and_tune_random_forest(
     logger.info("--- Tuning Model 2: Random Forest Regressor (Non-Linear Bagging Ensemble) ---")
 
     pipe = Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),  # e.g. HNR is NaN when no pitch period is found
         ("scaler", StandardScaler()),
         ("model", RandomForestRegressor(random_state=MLConfig.RANDOM_STATE))
     ])
@@ -273,6 +276,7 @@ def train_and_tune_xgboost(
     logger.info("--- Tuning Model 3: XGBoost Regressor (Gradient Tree Boosting) ---")
 
     pipe = Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),  # e.g. HNR is NaN when no pitch period is found
         ("scaler", StandardScaler()),
         ("model", XGBRegressor(
             random_state=MLConfig.RANDOM_STATE,

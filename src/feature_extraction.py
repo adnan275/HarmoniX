@@ -32,7 +32,7 @@ import warnings
 import librosa
 import numpy as np
 import pandas as pd
-from scipy.signal import find_peaks
+from scipy.signal import correlate, find_peaks
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 METADATA_PATH = PROJECT_ROOT / "data" / "processed" / "all_matched_metadata.csv"
@@ -64,7 +64,9 @@ def estimate_hnr_db(y, sr):
         return np.nan
 
     y = y - np.mean(y)
-    autocorr = np.correlate(y, y, mode="full")[len(y) - 1:]
+    # FFT-based autocorrelation: same values as np.correlate, but O(n log n)
+    # instead of O(n^2), which matters for 30-60 s chorus clips.
+    autocorr = correlate(y, y, mode="full", method="fft")[len(y) - 1:]
 
     if autocorr[0] <= 1e-12:
         return np.nan
