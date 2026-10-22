@@ -21,7 +21,11 @@ ENV/
 *.h5
 data/
 datasets/
-models/
+models/*
+!models/*.joblib
+!models/*.json
+!models/*.csv
+!models/.gitkeep
 
 # Logs and tracking
 wandb/

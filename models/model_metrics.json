@@ -1,0 +1,55 @@
+{
+  "target": "valence",
+  "n_train": 42,
+  "n_val": 9,
+  "n_test_reserved": 9,
+  "models": {
+    "Ridge": {
+      "cv_rmse": 0.0515,
+      "val_metrics": {
+        "MAE": 0.0529,
+        "RMSE": 0.0624,
+        "R2": 0.9388,
+        "Pearson_r": 0.97
+      },
+      "best_params": {
+        "alpha": 10.0
+      }
+    },
+    "Random_Forest": {
+      "cv_rmse": 0.0506,
+      "val_metrics": {
+        "MAE": 0.0527,
+        "RMSE": 0.0622,
+        "R2": 0.9392,
+        "Pearson_r": 0.9701
+      },
+      "best_params": {
+        "max_depth": 3,
+        "max_features": "sqrt",
+        "min_samples_leaf": 2,
+        "min_samples_split": 2,
+        "n_estimators": 50
+      }
+    },
+    "XGBoost": {
+      "cv_rmse": 0.0499,
+      "val_metrics": {
+        "MAE": 0.0521,
+        "RMSE": 0.0625,
+        "R2": 0.9387,
+        "Pearson_r": 0.9707
+      },
+      "best_params": {
+        "subsample": 1.0,
+        "reg_lambda": 5.0,
+        "reg_alpha": 0.1,
+        "n_estimators": 100,
+        "max_depth": 2,
+        "learning_rate": 0.05,
+        "colsample_bytree": 1.0
+      }
+    }
+  },
+  "best_model": "Random_Forest"
+}
