@@ -1,0 +1,57 @@
+{
+  "target": "valence",
+  "n_test": 116,
+  "metrics": {
+    "Ridge": {
+      "MAE": 0.1075,
+      "RMSE": 0.1356,
+      "R2": 0.3994,
+      "Pearson_r": 0.639,
+      "Pearson_p": 1.176535671814698e-14,
+      "Pearson_CI_low": 0.5169,
+      "Pearson_CI_high": 0.7356,
+      "Spearman_rho": 0.6514,
+      "Spearman_p": 2.4287780668876096e-15,
+      "Explained_Variance": 0.4082,
+      "Max_Error": 0.3898,
+      "Residual_Mean": 0.0163,
+      "Residual_Std": 0.1346
+    },
+    "Random_Forest": {
+      "MAE": 0.1096,
+      "RMSE": 0.1334,
+      "R2": 0.4183,
+      "Pearson_r": 0.6709,
+      "Pearson_p": 1.7247533711004884e-16,
+      "Pearson_CI_low": 0.5567,
+      "Pearson_CI_high": 0.7602,
+      "Spearman_rho": 0.6934,
+      "Spearman_p": 6.331601293018809e-18,
+      "Explained_Variance": 0.4198,
+      "Max_Error": 0.3822,
+      "Residual_Mean": 0.0067,
+      "Residual_Std": 0.1333
+    },
+    "XGBoost": {
+      "MAE": 0.1107,
+      "RMSE": 0.1382,
+      "R2": 0.3765,
+      "Pearson_r": 0.6204,
+      "Pearson_p": 1.1030885077277375e-13,
+      "Pearson_CI_low": 0.494,
+      "Pearson_CI_high": 0.7212,
+      "Spearman_rho": 0.6424,
+      "Spearman_p": 7.706155519991672e-15,
+      "Explained_Variance": 0.3835,
+      "Max_Error": 0.4161,
+      "Residual_Mean": 0.0146,
+      "Residual_Std": 0.1374
+    }
+  },
+  "models_evaluated": [
+    "Ridge",
+    "Random_Forest",
+    "XGBoost"
+  ],
+  "best_test_model": "Random_Forest"
+}

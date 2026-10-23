@@ -26,8 +26,10 @@ Metadata columns such as music_id, valence, arousal, and split are
 preserved when available.
 """
 
+import os
 from pathlib import Path
 import warnings
+from concurrent.futures import ProcessPoolExecutor
 
 import librosa
 import numpy as np
@@ -230,6 +232,32 @@ def extract_features(audio_path):
     return features
 
 
+def process_song_item(row_dict):
+    """Process a single song record (helper for multiprocessing)."""
+    audio_path = Path(str(row_dict["audio_path"]))
+    try:
+        if not audio_path.exists():
+            return None, {
+                "music_id": row_dict["music_id"],
+                "audio_path": str(audio_path),
+                "error": "Audio file not found"
+            }
+        features = extract_features(audio_path)
+        result = {
+            column: row_dict[column]
+            for column in row_dict
+            if column != "audio_path"
+        }
+        result.update(features)
+        return result, None
+    except Exception as exc:
+        return None, {
+            "music_id": row_dict["music_id"],
+            "audio_path": str(audio_path),
+            "error": str(exc)
+        }
+
+
 def main():
     if not METADATA_PATH.exists():
         raise FileNotFoundError(
@@ -251,40 +279,19 @@ def main():
     failures = []
 
     print(f"Found {len(metadata)} metadata rows.")
-    print("Extracting acoustic features...")
+    row_dicts = [row.to_dict() for _, row in metadata.iterrows()]
+    max_workers = min(os.cpu_count() or 4, 8)
+    print(f"Extracting acoustic features in parallel across {max_workers} CPU workers...")
 
-    for index, row in metadata.iterrows():
-        audio_path = Path(str(row["audio_path"]))
-
-        try:
-            if not audio_path.exists():
-                raise FileNotFoundError(f"Audio file not found: {audio_path}")
-
-            features = extract_features(audio_path)
-
-            # Keep identifiers, labels, and split assignments with features.
-            result = {
-                column: row[column]
-                for column in metadata.columns
-                if column != "audio_path"
-            }
-            result.update(features)
-            rows.append(result)
-
-            print(
-                f"[{index + 1}/{len(metadata)}] "
-                f"Processed music_id={row['music_id']}"
-            )
-
-        except Exception as exc:
-            failures.append({
-                "music_id": row["music_id"],
-                "audio_path": str(audio_path),
-                "error": str(exc),
-            })
-            warnings.warn(
-                f"Skipping music_id={row['music_id']}: {exc}"
-            )
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        for idx, (res, fail) in enumerate(executor.map(process_song_item, row_dicts)):
+            if res is not None:
+                rows.append(res)
+            if fail is not None:
+                failures.append(fail)
+                warnings.warn(f"Skipping music_id={fail['music_id']}: {fail['error']}")
+            if (idx + 1) % 50 == 0 or (idx + 1) == len(row_dicts):
+                print(f"[{idx + 1}/{len(row_dicts)}] Processed ({len(rows)} ok, {len(failures)} failed)")
 
     if not rows:
         raise RuntimeError(

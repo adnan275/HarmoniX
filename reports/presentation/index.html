@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HarmoniX — Phase 1 Presentation Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --accent-blue: #38bdf8;
+      --accent-purple: #818cf8;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glow: rgba(56, 189, 248, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Ambient background gradient spheres */
+    .ambient-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(129, 140, 248, 0.05) 50%, transparent 70%);
+      top: -200px;
+      left: -150px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .ambient-glow-2 {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.08) 0%, rgba(251, 191, 36, 0.04) 50%, transparent 70%);
+      bottom: -250px;
+      right: -200px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .brand span {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: var(--text-muted);
+      border-left: 1px solid var(--border-color);
+      padding-left: 12px;
+      margin-left: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .slide-counter {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    /* Slides Deck Container */
+    #deck {
+      position: relative;
+      height: 100vh;
+      width: 100vw;
+      padding-top: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .slide {
+      position: absolute;
+      top: 56px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px) scale(0.98);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 36px 60px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Typography inside slides */
+    .slide-category {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent-blue);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-category::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      box-shadow: 0 0 10px var(--accent-blue);
+    }
+
+    h1.slide-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 40%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.slide-subtitle {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 900px;
+      margin-bottom: 28px;
+    }
+
+    /* Grid Layouts for Content */
+    .content-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .content-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .card.highlight {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.85) 0%, rgba(30, 41, 59, 0.6) 100%);
+    }
+
+    .card-icon {
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .card-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .metric-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+      margin: 8px 0;
+    }
+
+    .metric-value.emerald { color: var(--accent-emerald); }
+    .metric-value.blue { color: var(--accent-blue); }
+    .metric-value.amber { color: var(--accent-amber); }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    /* Tables */
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin-top: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .custom-table th {
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text-main);
+      text-align: left;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .custom-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+
+    .custom-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .custom-table tr.winner-row td {
+      background: rgba(52, 211, 153, 0.1);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge.emerald { background: rgba(52, 211, 153, 0.2); color: var(--accent-emerald); }
+    .badge.blue { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+    .badge.amber { background: rgba(251, 191, 36, 0.2); color: var(--accent-amber); }
+
+    /* Image display in slides */
+    .slide-figure-container {
+      width: 100%;
+      max-height: 480px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .slide-figure-container img {
+      max-width: 100%;
+      max-height: 460px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    /* Bottom Progress Bar */
+    .progress-bar-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 100;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-emerald));
+      transition: width 0.3s ease;
+    }
+
+    /* Speaker Notes Modal */
+    .notes-drawer {
+      position: fixed;
+      bottom: 4px;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-color);
+      padding: 16px 28px;
+      max-height: 160px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 90;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .notes-drawer.open {
+      transform: translateY(0);
+    }
+
+    .notes-drawer strong {
+      color: var(--accent-blue);
+    }
+
+    /* Print styling for PDF export */
+    @media print {
+      body {
+        overflow: visible;
+        height: auto;
+      }
+      header, .progress-bar-container, .notes-drawer {
+        display: none !important;
+      }
+      #deck {
+        height: auto;
+        padding-top: 0;
+        display: block;
+      }
+      .slide {
+        position: relative !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        page-break-after: always;
+        height: 100vh;
+        top: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div style="display: flex; align-items: center;">
+      <div class="brand">🎵 Harmoni<span>X</span></div>
+      <div class="tagline">Phase 1 Defense & Research Deck</div>
+    </div>
+    <div class="nav-controls">
+      <div class="slide-counter" id="counter">1 / 14</div>
+      <button class="btn" id="btnNotes" title="Toggle Speaker Notes (N)">📝 Notes</button>
+      <button class="btn" id="btnPrev" title="Previous Slide (←)">←</button>
+      <button class="btn" id="btnNext" title="Next Slide (→)">→</button>
+    </div>
+  </header>
+
+  <!-- Presentation Deck -->
+  <main id="deck">
+
+    <!-- Slide 1: Title Slide -->
+    <section class="slide active" id="slide-1">
+      <div class="slide-category">CSAI Research Project • Phase 1 Evaluation</div>
+      <h1 class="slide-title">The Science of Musical Perception</h1>
+      <p class="slide-subtitle">
+        Predicting Human-Rated Musical Valence from Sound Waves using Wave Physics, Digital Signal Processing, and Classical Machine Learning
+      </p>
+      
+      <div class="content-grid-3" style="margin-top: 20px;">
+        <div class="card highlight">
+          <div class="card-icon">🌊</div>
+          <div class="card-title">Physics Grounding</div>
+          <div class="card-text">
+            Wave mechanics ($v = f \lambda$), Fourier STFT, Helmholtz & Plomp-Levelt sensory consonance.
+          </div>
+        </div>
+        <div class="card highlight">
+          <div class="card-icon">🛡️</div>
+          <div class="card-title">Zero Data Leakage</div>
+          <div class="card-text">
+            767 PMEmo tracks partitioned 70/15/15 by song ID; scaler fit exclusively on training data.
+          </div>
+        </div>
+        <div class="card highlight">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Empirical Benchmark</div>
+          <div class="card-text">
+            Ridge, Random Forest, and XGBoost evaluated on untouched held-out test split ($N = 116$).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 2: Team Members & Ownership -->
+    <section class="slide" id="slide-2">
+      <div class="slide-category">Team Structure & Modules</div>
+      <h1 class="slide-title">HarmoniX Phase 1 Team Distribution</h1>
+      <p class="slide-subtitle">
+        5 team members assigned distinct, non-overlapping modules corresponding strictly to the CSAI evaluation rubric.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="card" style="padding: 14px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #fff; font-size: 16px;">👑 1. Adnan Rizvi (Lead)</strong>
+              <div style="color: var(--text-muted); font-size: 13px;">Dataset Pipeline, Ingestion, Quality Audit & Leakage-Free 70/15/15 Splitting</div>
+            </div>
+            <span class="badge blue">src/data_loader.py</span>
+          </div>
+        </div>
+        <div class="card" style="padding: 14px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #fff; font-size: 16px;">🔬 2. Aditya Garariya</strong>
+              <div style="color: var(--text-muted); font-size: 13px;">Acoustic & Physics-Informed Feature Engineering (34 Descriptors)</div>
+            </div>
+            <span class="badge emerald">src/feature_extraction.py</span>
+          </div>
+        </div>
+        <div class="card" style="padding: 14px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #fff; font-size: 16px;">📊 3. Bhoomi</strong>
+              <div style="color: var(--text-muted); font-size: 13px;">Classical ML Modeling, Pipeline Imputation & Hyperparameter CV Tuning</div>
+            </div>
+            <span class="badge amber">src/train_ml.py</span>
+          </div>
+        </div>
+        <div class="card" style="padding: 14px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #fff; font-size: 16px;">🔍 4. Praanshu Ranjan</strong>
+              <div style="color: var(--text-muted); font-size: 13px;">Feature Analysis, Partial Correlations (Arousal Control) & SHAP Explainability</div>
+            </div>
+            <span class="badge blue">src/feature_analysis.py</span>
+          </div>
+        </div>
+        <div class="card highlight" style="padding: 14px 20px; border-color: var(--accent-emerald);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: #fff; font-size: 16px;">📑 5. Vani Vashishtha</strong>
+              <div style="color: var(--text-muted); font-size: 13px;">Held-Out Test Benchmark ($N=116$), Residual Diagnostics, IEEE LaTeX Paper & Slides</div>
+            </div>
+            <span class="badge emerald">src/evaluate.py</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Research Question & Affect Model -->
+    <section class="slide" id="slide-3">
+      <div class="slide-category">Core Research Formulation</div>
+      <h1 class="slide-title">Can Sound Waves Predict Pleasantness?</h1>
+      <p class="slide-subtitle">
+        Isolating physical sound wave mechanics from linguistic and cultural semantic comprehension.
+      </p>
+
+      <div class="content-grid-2">
+        <div class="card">
+          <div class="card-title">Russell's Circumplex Model of Affect</div>
+          <div class="card-text" style="margin-bottom: 16px;">
+            Human emotion in music is mapped onto two orthogonal continuous axes:
+          </div>
+          <ul style="color: var(--text-muted); font-size: 14px; margin-left: 20px; line-height: 1.8;">
+            <li><strong style="color: var(--accent-amber);">Arousal:</strong> Physiological activation & energy (loudness, tempo). Highly correlated with raw sound wave energy.</li>
+            <li><strong style="color: var(--accent-blue);">Valence:</strong> Hedonic pleasantness / positivity vs negativity. The fundamental challenge in MIR because it depends on subtle harmonic and timbral relationships.</li>
+          </ul>
+          <div style="margin-top: 20px; padding: 12px; background: rgba(56, 189, 248, 0.08); border-radius: 8px; border-left: 3px solid var(--accent-blue); font-size: 13px;">
+            <strong>HarmoniX Hypothesis:</strong> Even without lyrics, measurable physical wave descriptors (timbre, spectral contrast, sensory consonance) contain strong predictive signals for valence.
+          </div>
+        </div>
+        <div class="slide-figure-container">
+          <img src="../figures/02_valence_vs_arousal_space.png" alt="Russell's Affect Grid">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: Dataset Pipeline & Splitting -->
+    <section class="slide" id="slide-4">
+      <div class="slide-category">Stage 1: Ingestion & Splitting</div>
+      <h1 class="slide-title">PMEmo Dataset & Leakage Safeguards</h1>
+      <p class="slide-subtitle">
+        Architecting a reproducible, zero-leakage data pipeline with identical target distributions.
+      </p>
+
+      <div class="content-grid-2">
+        <div class="card">
+          <div class="card-title">Leakage-Free Partitioning</div>
+          <div class="card-text">
+            <ul style="margin-left: 20px; line-height: 2.0; font-size: 14px;">
+              <li><strong>Total Audio Files Audited:</strong> 794 MP3 chorus excerpts (22.05 kHz mono).</li>
+              <li><strong>Matched Annotations:</strong> 767 verified songs with static valence/arousal.</li>
+              <li><strong>Train Split (70%):</strong> 536 songs used for scaler fitting and cross-validation.</li>
+              <li><strong>Validation Split (15%):</strong> 115 songs for hyperparameter selection.</li>
+              <li><strong>Untouched Test Split (15%):</strong> 116 songs held out strictly for final evaluation.</li>
+            </ul>
+            <div style="margin-top: 16px; padding: 12px; background: rgba(52, 211, 153, 0.08); border-radius: 8px; border-left: 3px solid var(--accent-emerald); font-size: 12.5px;">
+              <strong>Guaranteed Disjoint Sets:</strong> Splits are partitioned strictly by <code>music_id</code> with zero clip overlap across folds.
+            </div>
+          </div>
+        </div>
+        <div class="slide-figure-container">
+          <img src="../figures/03_split_consistency_boxplot.png" alt="Split Consistency Boxplot">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Feature Engineering -->
+    <section class="slide" id="slide-5">
+      <div class="slide-category">Stage 2: Physics-Informed Feature Engineering</div>
+      <h1 class="slide-title">34-Dimensional Acoustic Feature Vector</h1>
+      <p class="slide-subtitle">
+        Translating continuous sound wave dynamics into fixed-length mathematical descriptors.
+      </p>
+
+      <div class="content-grid-3">
+        <div class="card">
+          <div class="card-title">🎼 13 MFCCs (Timbre)</div>
+          <div class="card-text">
+            Mel-Frequency Cepstral Coefficients capturing timbral texture and spectral envelope curvature. <strong>MFCC 1</strong> tracks overall spectral energy level.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">✨ 5 Spectral Moments</div>
+          <div class="card-text">
+            <strong>Spectral Centroid:</strong> Perceived brightness / warmth.<br/>
+            <strong>Spectral Contrast:</strong> Peak-to-valley ratio.<br/>
+            <strong>Spectral Flatness:</strong> Noise vs. tonality.<br/>
+            <strong>Roll-off & Bandwidth:</strong> Energy spread.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ 2 Energy Descriptors</div>
+          <div class="card-text">
+            <strong>RMS Energy:</strong> Wave amplitude & power ($\mathcal{E} \propto A^2$).<br/>
+            <strong>Zero-Crossing Rate:</strong> Waveform polarity shifts per second, tracking high-frequency noise.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🎹 12 Chroma STFT</div>
+          <div class="card-text">
+            Harmonic pitch distribution projected onto 12 semitone pitch classes (C, C#, D, ..., B) to represent harmonic pitch presence.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📶 1 HNR Estimate</div>
+          <div class="card-text">
+            Harmonic-to-Noise Ratio in dB estimated via time-domain autocorrelation peak ratio, describing periodic voice/instrument clarity.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🎶 1 Sensory Dissonance</div>
+          <div class="card-text">
+            Plomp-Levelt tonal roughness calculated across the 30 most prominent spectral peaks per STFT frame to measure sensory roughness.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: ML Models & Tuning -->
+    <section class="slide" id="slide-6">
+      <div class="slide-category">Stage 3: Classical ML Modeling</div>
+      <h1 class="slide-title">Three Competitive Architectures</h1>
+      <p class="slide-subtitle">
+        Comparing linear regularized benchmark against bagging and boosting tree ensembles.
+      </p>
+
+      <div class="content-grid-3">
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-blue);">1. Ridge Regressor</div>
+          <div class="badge blue" style="margin-bottom: 10px;">Linear L2 Benchmark</div>
+          <div class="card-text">
+            Minimizes penalized residual sum of squares:
+            $$\mathcal{L} = \sum (y - \mathbf{w}^T\mathbf{x})^2 + \alpha \|\mathbf{w}\|_2^2$$
+            Tuned with 5-fold CV to $\alpha = 0.1$. Serves as regularized baseline.
+          </div>
+        </div>
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-emerald);">2. Random Forest</div>
+          <div class="badge emerald" style="margin-bottom: 10px;">Bagging Ensemble</div>
+          <div class="card-text">
+            Averages 50 decorrelated decision trees with sub-feature sampling ($m = \sqrt{p}$). Highly robust to target label noise; minimum leaf samples $= 2$.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-amber);">3. XGBoost Regressor</div>
+          <div class="badge amber" style="margin-bottom: 10px;">Gradient Tree Boosting</div>
+          <div class="card-text">
+            Sequentially builds 150 shallow trees (depth 3) with learning rate $\eta = 0.1$, subsample 0.7, colsample 0.85, and strong L2 regularization ($\lambda = 10$).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7: Feature Correlations & Arousal Confounding -->
+    <section class="slide" id="slide-7">
+      <div class="slide-category">Stage 4: Feature Explainability</div>
+      <h1 class="slide-title">Correlations & The Arousal Confounder</h1>
+      <p class="slide-subtitle">
+        Praanshu's analysis revealed that many apparent "valence" features actually track arousal.
+      </p>
+
+      <div class="content-grid-2">
+        <div class="card">
+          <div class="card-title">Key Statistical Findings</div>
+          <ul style="color: var(--text-muted); font-size: 13.5px; line-height: 1.8; margin-left: 18px;">
+            <li><strong>Collinearity:</strong> Valence & arousal correlate at $\rho = 0.69$ in PMEmo ($p < 10^{-70}$).</li>
+            <li><strong>24 of 34 features</strong> have statistically significant correlations with valence under Benjamini-Hochberg FDR control ($q < 0.05$).</li>
+            <li><strong>The Spectral Centroid Reality Check:</strong> Raw correlation with valence is $\rho = 0.40$ ($q < 10^{-20}$). However, once arousal is controlled via partial correlation, $\rho_{\text{partial}} = -0.002$ ($q = 0.97$)!</li>
+            <li><strong>Insight:</strong> Brighter songs are not rated positive because of brightness itself; they are rated positive because they are energetic!</li>
+          </ul>
+        </div>
+        <div class="slide-figure-container">
+          <img src="../figures/04_feature_valence_correlations.png" alt="Feature Correlations">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8: SHAP Explainability -->
+    <section class="slide" id="slide-8">
+      <div class="slide-category">Stage 4: Explainability & SHAP</div>
+      <h1 class="slide-title">What Drives Model Predictions?</h1>
+      <p class="slide-subtitle">
+        SHAP summary values confirm that timbral texture and spectral contrast dominate decision boundaries.
+      </p>
+
+      <div class="content-grid-2">
+        <div class="card">
+          <div class="card-title">Top 3 SHAP Predictors</div>
+          <div class="card-text" style="line-height: 1.8;">
+            <p><strong>1. MFCC 1:</strong> Dominates both Random Forest (mean |SHAP| = 0.029) and XGBoost (0.040). Captures overall spectral power.</p>
+            <p><strong>2. Spectral Contrast:</strong> Strong negative relationship (mean |SHAP| = 0.021). Flatter spectral contrast indicates fuller, denser instrumentation.</p>
+            <p><strong>3. Spectral Flatness:</strong> Tonal resonance vs noise (mean |SHAP| = 0.021).</p>
+            <p style="margin-top: 14px; color: var(--accent-blue);"><strong>By Feature Family:</strong> Spectral shape (0.038) and MFCC timbre (0.052) contribute 70%+ of predictive mass.</p>
+          </div>
+        </div>
+        <div class="slide-figure-container">
+          <img src="../figures/12_shap_summary_xgboost.png" alt="SHAP Beeswarm">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 9: Dissonance Paradox -->
+    <section class="slide" id="slide-9">
+      <div class="slide-category">Theoretical Rigor</div>
+      <h1 class="slide-title">The Sensory Dissonance Paradox</h1>
+      <p class="slide-subtitle">
+        Why did dissonance correlate positively with valence ($\rho = +0.32$)? A reality check on real songs.
+      </p>
+
+      <div class="content-grid-2">
+        <div class="card">
+          <div class="card-title">Dissonance Probe on Real Songs</div>
+          <div class="card-text" style="line-height: 1.8; font-size: 13.5px;">
+            <p>Common intuition suggests: <em>Dissonance $\to$ Unpleasant $\to$ Negative Valence</em>. But our probe on 200 songs revealed:</p>
+            <ul style="margin-left: 18px; margin-top: 8px;">
+              <li>On pure tone dyads at 440 Hz, our estimator matches Plomp-Levelt theory accurately.</li>
+              <li>However, in polyphonic pop choruses, the estimator correlates $\rho = 0.969$ with <strong>peak energy balance</strong> across the 30 spectral peaks!</li>
+              <li><strong>Takeaway:</strong> In PMEmo songs, the feature is not tracking microtonal dissonance; it is tracking <em>full, well-produced, commercial arrangements</em>!</li>
+            </ul>
+          </div>
+        </div>
+        <div class="slide-figure-container">
+          <img src="../figures/15_dissonance_estimator_check.png" alt="Dissonance Check">
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 10: Final Test Benchmark (VANI) -->
+    <section class="slide" id="slide-10">
+      <div class="slide-category">Stage 5: Final Evaluation Benchmark (Vani)</div>
+      <h1 class="slide-title">Held-Out Test Set Results ($N = 116$)</h1>
+      <p class="slide-subtitle">
+        The strictly untouched test partition was evaluated across all models. Random Forest wins!
+      </p>
+
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>5-Fold CV RMSE</th>
+            <th>Validation $R^2$</th>
+            <th>Test MAE</th>
+            <th>Test RMSE</th>
+            <th>Test $R^2$</th>
+            <th>Test Pearson $r$ [95% CI]</th>
+            <th>Test Spearman $\rho$</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Ridge (Baseline)</strong></td>
+            <td>0.1138</td>
+            <td>0.4123</td>
+            <td>0.1075</td>
+            <td>0.1356</td>
+            <td>0.3994</td>
+            <td>0.6390 [0.52, 0.74]</td>
+            <td>0.6514</td>
+          </tr>
+          <tr class="winner-row">
+            <td><strong>Random Forest 🏆</strong></td>
+            <td>0.1166</td>
+            <td>0.4320</td>
+            <td><strong>0.1096</strong></td>
+            <td><strong>0.1334</strong></td>
+            <td><strong>0.4183</strong></td>
+            <td><strong>0.6709 [0.56, 0.76]</strong></td>
+            <td><strong>0.6934</strong></td>
+          </tr>
+          <tr>
+            <td><strong>XGBoost</strong></td>
+            <td>0.1174</td>
+            <td>0.4464</td>
+            <td>0.1107</td>
+            <td>0.1382</td>
+            <td>0.3765</td>
+            <td>0.6204 [0.49, 0.72]</td>
+            <td>0.6424</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="content-grid-3" style="margin-top: 24px;">
+        <div class="card">
+          <div class="metric-sub">Variance Explained ($R^2$)</div>
+          <div class="metric-value emerald">41.83%</div>
+          <div class="card-text">Random Forest explains nearly 42% of human valence variance purely from 34 sound wave features.</div>
+        </div>
+        <div class="card">
+          <div class="metric-sub">Pearson Correlation ($r$)</div>
+          <div class="metric-value blue">0.6709</div>
+          <div class="card-text">Strong linear tracking with human perceived valence ($p = 6.2 \times 10^{-16}$).</div>
+        </div>
+        <div class="card">
+          <div class="metric-sub">Test Set RMSE</div>
+          <div class="metric-value amber">0.1334</div>
+          <div class="card-text">Average prediction error margin is just 13.3% across the continuous [0, 1] scale.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 11: Actual vs Predicted Figures -->
+    <section class="slide" id="slide-11">
+      <div class="slide-category">Stage 5: Test Visual Diagnostics</div>
+      <h1 class="slide-title">Figure 16: Actual vs. Predicted Valence</h1>
+      <p class="slide-subtitle">
+        Comparing model predictions against the ideal 45-degree parity diagonal ($y = \hat{y}$).
+      </p>
+
+      <div class="slide-figure-container" style="max-height: 480px;">
+        <img src="../figures/16_actual_vs_predicted.png" alt="Actual vs Predicted">
+      </div>
+    </section>
+
+    <!-- Slide 12: Residual Diagnostics -->
+    <section class="slide" id="slide-12">
+      <div class="slide-category">Stage 5: Residual Error Diagnostics</div>
+      <h1 class="slide-title">Homoscedasticity & Regression to Mean</h1>
+      <p class="slide-subtitle">
+        Residual error plots ($y - \hat{y}$ vs. $\hat{y}$) and Gaussian normality diagnostics.
+      </p>
+
+      <div class="content-grid-2">
+        <div class="slide-figure-container">
+          <img src="../figures/17_residual_analysis.png" alt="Residuals vs Fitted">
+        </div>
+        <div class="slide-figure-container">
+          <img src="../figures/18_residual_distribution_qq.png" alt="Q-Q Plot">
+        </div>
+      </div>
+
+      <div style="margin-top: 14px; font-size: 13px; color: var(--text-muted); display: flex; gap: 20px;">
+        <div>✅ <strong>Homoscedasticity:</strong> Error variance remains uniformly distributed within $\pm 2\sigma$ bounds.</div>
+        <div>⚠️ <strong>Regression to the Mean:</strong> Models slightly underpredict extreme happy songs ($>0.8$) and overpredict gloomy songs ($<0.3$).</div>
+        <div>✅ <strong>Normality:</strong> Q-Q plot confirms near-Gaussian residual errors ($W = 0.98$).</div>
+      </div>
+    </section>
+
+    <!-- Slide 13: Why Random Forest Won (Viva Defense) -->
+    <section class="slide" id="slide-13">
+      <div class="slide-category">Critical Analysis & Viva Discussion</div>
+      <h1 class="slide-title">Why Random Forest Beat XGBoost on Test Data</h1>
+      <p class="slide-subtitle">
+        Understanding the generalization gap between Bagging and Boosting on affective audio data.
+      </p>
+
+      <div class="content-grid-2">
+        <div class="card highlight">
+          <div class="card-title" style="color: var(--accent-emerald);">Random Forest (Bagging) — Generalization Champ</div>
+          <ul style="color: var(--text-muted); font-size: 13.5px; line-height: 1.9; margin-left: 20px;">
+            <li><strong>Drop from Val to Test:</strong> Only $-0.0137$ ($R^2: 0.4320 \to 0.4183$).</li>
+            <li><strong>Mechanism:</strong> Averages 50 completely independent trees with randomized feature subsets ($\sqrt{p}$).</li>
+            <li><strong>Effect:</strong> Drastically suppresses variance caused by subjective human rating noise.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: var(--accent-amber);">XGBoost (Boosting) — Validation Overfitting</div>
+          <ul style="color: var(--text-muted); font-size: 13.5px; line-height: 1.9; margin-left: 20px;">
+            <li><strong>Drop from Val to Test:</strong> Dropped $-0.0699$ ($R^2: 0.4464 \to 0.3765$).</li>
+            <li><strong>Mechanism:</strong> Sequentially fits residuals of previous trees.</li>
+            <li><strong>Effect:</strong> Chases idiosyncratic interactions in the validation set on a small $N=536$ dataset.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 14: Phase 2 Deep Learning Roadmap -->
+    <section class="slide" id="slide-14">
+      <div class="slide-category">Phase 2 Roadmap (Post-Evaluation)</div>
+      <h1 class="slide-title">Phase 2: Deep Learning & Spectrograms</h1>
+      <p class="slide-subtitle">
+        Bridging classical physics feature engineering with 2D Convolutional Neural Networks.
+      </p>
+
+      <div class="content-grid-3">
+        <div class="card">
+          <div class="card-icon">📻</div>
+          <div class="card-title">1. Audio Spectroscopy</div>
+          <div class="card-text">
+            Compute 128-band Log-Mel Spectrogram images from continuous PCM waves, preserving fine-grained time-frequency energy patterns.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧠</div>
+          <div class="card-title">2. PyTorch 2D CNNs</div>
+          <div class="card-text">
+            Train ResNet-18 / MobileNetV3 architectures on 2D spectrogram patches to learn hierarchical timbral and harmonic representations.
+          </div>
+        </div>
+        <div class="card highlight">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">3. Late-Fusion Hybrid</div>
+          <div class="card-text">
+            Concatenate classical 34-dim physics embeddings with CNN latent dense vectors for state-of-the-art multimodal valence prediction.
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 30px; text-align: center; color: var(--text-muted); font-size: 14px;">
+        🎓 <strong>HarmoniX Phase 1 Deliverables Complete:</strong> <code>src/evaluate.py</code> • <code>reports/phase1_report.pdf</code> • <code>reports/test_evaluation_results.csv</code> • Figures 16–19
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Speaker Notes Drawer -->
+  <div class="notes-drawer" id="notesDrawer">
+    <div id="notesContent">Loading notes...</div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('counter');
+    const progressBar = document.getElementById('progressBar');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesContent = document.getElementById('notesContent');
+    let currentIndex = 0;
+
+    const speakerNotes = [
+      "Slide 1: Good morning panel. We present HarmoniX: Predicting musical pleasantness from sound waves using physics and machine learning. In Phase 1, we focus strictly on acoustic physics and classical ML without lyrics.",
+      "Slide 2: Our team is strictly divided into 5 non-overlapping modules: Adnan handled data ingestion and leakage-free splitting; Aditya extracted 34 acoustic features; Bhoomi trained Ridge, RF, and XGBoost; Praanshu analyzed feature correlations and SHAP; and Vani evaluated the held-out test set, analyzed residuals, and prepared the IEEE report.",
+      "Slide 3: We frame our research question around Russell's Circumplex affect space. While arousal is trivial to predict from raw energy, valence is famously difficult because it depends on harmony and timbre. We hypothesize sound waves alone carry strong valence signals.",
+      "Slide 4: Zero leakage was strictly enforced. 767 verified songs were partitioned 70/15/15 by song ID. The test split was completely locked away until final evaluation. Scalers were fit only on training data.",
+      "Slide 5: Aditya extracted 34 features across 6 domains: 13 MFCCs, 5 spectral moments (centroid, contrast, flatness), 2 waveform dynamics, 12 chroma pitch classes, HNR, and sensory dissonance.",
+      "Slide 6: Bhoomi trained 3 models: Ridge as regularized linear baseline, Random Forest as bagging ensemble, and XGBoost as gradient boosting. All models were cross-validated on training data.",
+      "Slide 7: Praanshu discovered that valence and arousal correlate strongly (rho = 0.69). Controlling for arousal showed that spectral centroid (brightness) does not predict valence independently. Brighter songs are rated positive because they are energetic!",
+      "Slide 8: SHAP analysis confirms that MFCC 1, spectral contrast, and spectral flatness dominate decisions in both tree models. Energy features rank lowest because MFCC 1 already captures wave power.",
+      "Slide 9: Intuition says dissonance sounds unpleasant. But on real songs, our dissonance estimator correlated POSITIVELY (rho = 0.32). Why? Because in polyphonic pop songs, it tracks spectral peak fullness and rich commercial production!",
+      "Slide 10: Vani's test set evaluation on 116 untouched songs. Random Forest won with R2 = 0.4183 and Pearson r = 0.6709 (p < 10^-15). Ridge baseline achieved 0.3994. XGBoost dropped to 0.3765 due to slight validation overfitting.",
+      "Slide 11: Figure 16 shows Actual vs Predicted scatter plots. Random Forest aligns closest to the 45-degree diagonal line, demonstrating consistent linear tracking across songs.",
+      "Slide 12: Residual diagnostics: Errors are homoscedastic and normally distributed (W = 0.98). We observe classic regression to the mean at extreme valence ratings due to MSE loss minimization.",
+      "Slide 13: Viva question: Why did Random Forest beat XGBoost? Because Random Forest averages 50 independent trees with sqrt(p) sub-feature sampling, which suppresses subjective human rating noise. XGBoost chased noise during boosting.",
+      "Slide 14: Phase 2 will transition to Deep Learning: 128-band Mel Spectrograms, 2D CNNs (ResNet-18), and a late-fusion hybrid model combining physics features with CNN embeddings. Thank you!"
+    ];
+
+    function updateSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= slides.length) index = slides.length - 1;
+      currentIndex = index;
+
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentIndex);
+      });
+
+      counter.textContent = `${currentIndex + 1} / ${slides.length}`;
+      progressBar.style.width = `${((currentIndex + 1) / slides.length) * 100}%`;
+      notesContent.innerHTML = `<strong>Slide ${currentIndex + 1} Notes:</strong> ${speakerNotes[currentIndex] || "No notes for this slide."}`;
+    }
+
+    document.getElementById('btnNext').addEventListener('click', () => updateSlide(currentIndex + 1));
+    document.getElementById('btnPrev').addEventListener('click', () => updateSlide(currentIndex - 1));
+    document.getElementById('btnNotes').addEventListener('click', () => notesDrawer.classList.toggle('open'));
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        updateSlide(currentIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        updateSlide(currentIndex - 1);
+      } else if (e.key === 'n' || e.key === 'N') {
+        notesDrawer.classList.toggle('open');
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    window.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    window.addEventListener('touchend', (e) => {
+      const diffX = e.changedTouches[0].clientX - touchStartX;
+      if (diffX < -50) updateSlide(currentIndex + 1);
+      if (diffX > 50) updateSlide(currentIndex - 1);
+    });
+
+    updateSlide(0);
+  </script>
+</body>
+</html>
