@@ -118,23 +118,28 @@ All 5 team members are assigned distinct, non-overlapping modules corresponding 
 AIML_project/
 ├── data/
 │   ├── raw/PMEmo/               # Raw audio clips (.wav/.mp3) and static_annotations.csv
-│   └── processed/               # Leakage-free train, val, and test split tables
+│   └── processed/               # Leakage-free train (536), val (115), and test (116) split tables
 ├── src/
 │   ├── data_loader.py           # [Adnan] Ingestion, audio matching & 70/15/15 splits
 │   ├── inspect_dataset.py       # [Adnan] Dataset audit & decodability verification
 │   ├── eda_analysis.py          # [Adnan] Distribution plots & Russell's 2D affect grid
-│   ├── feature_extraction.py    # [Garariya] Physics & DSP acoustic feature extractor
+│   ├── feature_extraction.py    # [Garariya] Physics & DSP acoustic feature extractor (34 dims)
 │   ├── train_ml.py              # [Bhoomi] Classical ML modeling (Ridge, RF, XGBoost)
-│   ├── feature_analysis.py      # [Praanshu] Feature importance & physical correlation
-│   └── evaluate.py              # [Vani] Test evaluation benchmark & residual analysis
-├── models/                      # Serialized trained model artifacts (.joblib)
+│   ├── feature_analysis.py      # [Praanshu] Feature importance, FDR & SHAP explainability
+│   └── evaluate.py              # [Vani] Test evaluation benchmark & residual diagnostics
+├── models/                      # Serialized models (.joblib), scaler & metrics (.json, .csv)
 ├── reports/
-│   ├── figures/                 # High-resolution figures for IEEE report and PPT
-│   │   ├── 01_valence_distribution.png
-│   │   ├── 02_valence_vs_arousal_space.png
-│   │   └── 03_split_consistency_boxplot.png
+│   ├── figures/                 # 19 High-resolution publication figures (01 to 19)
+│   │   ├── 01_valence_distribution.png ... 03_split_consistency_boxplot.png  # [Adnan: EDA]
+│   │   ├── 04_feature_valence_correlations.png ... 15_dissonance_check.png    # [Praanshu: SHAP]
+│   │   └── 16_actual_vs_predicted.png ... 19_model_generalization.png        # [Vani: Test Eval]
 │   ├── dataset_summary_statistics.csv
-│   └── phase1_report/           # LaTeX source files for IEEE Phase 1 paper
+│   ├── feature_analysis_summary.md
+│   ├── feature_correlation_matrix.csv
+│   ├── feature_importance.csv
+│   ├── feature_valence_correlations.csv
+│   ├── model_tuning_results.csv
+│   └── test_evaluation_results.csv
 ├── requirements.txt             # Python dependencies
 ├── .gitignore                   # Excludes raw audio, binaries, and virtual environments
 └── README.md                    # Project documentation
@@ -189,18 +194,22 @@ Following the Phase 1 evaluation, the team will implement **Phase 2: Deep Learni
 * **Deep Learning Model:** PyTorch 2D Convolutional Neural Network (CNN) trained on spectrogram representations.
 * **Hybrid Multi-Modal Fusion:** Combining tabular physics features with CNN latent embeddings for additional evaluation bonus marks.
 * **Interactive Web Application:** Streamlit-based UI for uploading any unseen audio and receiving real-time predictions and acoustic breakdowns.
-## ⚠️ 7. Scientific Framing & Caveats
+
+---
+
+## ⚠️ 8. Scientific Framing & Caveats
 1. **Valence vs. Universal Pleasantness:** Valence measures perceived emotional positivity vs. negativity. Musical taste is multifaceted and influenced by cultural background, familiarity, and personal psychology; this model predicts objective acoustic-driven perceived valence, not universal artistic value.
 2. **Audio-Only Modeling:** Lyrics and linguistic semantics are intentionally excluded to isolate acoustic and wave mechanics.
 
 ---
 
-## 📜 8. License & Acknowledgments
+## 📜 9. License & Acknowledgments
 * **Primary Dataset:** PMEmo Dataset (*Hui Zhang et al.*)
 * Developed as part of the **Computer Science & Artificial Intelligence (CSAI)** curriculum.
 
+---
 
-
+## 🔬 10. Technical Module Deep Dives
 
 ### Acoustic / Physics-Informed Feature Extraction
 
@@ -272,3 +281,26 @@ python src/feature_analysis.py
 - Correlated features share credit in permutation importance and SHAP, so a low score does not mean a feature is unrelated to valence (see the heatmaps).
 - HNR and sensory dissonance are simplified estimates. HNR is undefined (NaN) for 6 songs, and its Pearson and Spearman correlations with valence disagree in sign, so it is not a reliable descriptor here.
 - Valence is a proxy for pleasantness-related perception, not a universal measure of musical pleasantness.
+
+
+### Held-Out Test Evaluation Benchmark & Residual Diagnostics
+
+The final model evaluation module is implemented in `src/evaluate.py`. It benchmarks the trained models on the strictly untouched held-out test split ($n = 116$ songs) and performs comprehensive residual diagnostics.
+
+**Held-Out Test Results ($n = 116$ songs):**
+
+| Model | Test MAE | Test RMSE | Test $R^2$ | Test Pearson $r$ [95% CI] | Test Spearman $\rho$ | Result |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Ridge Regression (Baseline)** | 0.1075 | 0.1356 | 0.3994 | 0.6390 [0.517, 0.736] | 0.6514 | Strong linear baseline |
+| **Random Forest Regressor** | **0.1096** | **0.1334** | **0.4183** | **0.6709 [0.557, 0.760]** | **0.6934** | 🏆 **Top Generalized Model** |
+| **XGBoost Regressor** | 0.1107 | 0.1382 | 0.3765 | 0.6204 [0.494, 0.721] | 0.6424 | Slight validation overfit |
+
+**Key Findings:**
+1. **Random Forest Achieves Superior Generalization:** Bagging over decorrelated decision trees with sub-feature sampling ($\sqrt{p}$) provides robust regularization against annotation noise, attaining $R^2 = 0.4183$ and Pearson $r = 0.6709$ ($p < 10^{-15}$).
+2. **Residual Normality Validated:** Test residuals pass the Shapiro-Wilk normality test ($p = 0.163 > 0.05$), exhibiting near-Gaussian error profiles and homoscedastic variance across the target range.
+3. **Outputs:** `reports/figures/16_*.png` to `19_*.png`, `reports/test_evaluation_results.csv`, and `models/test_metrics.json`.
+
+Run the evaluation module:
+```bash
+python src/evaluate.py
+```
