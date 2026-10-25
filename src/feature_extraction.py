@@ -66,8 +66,6 @@ def estimate_hnr_db(y, sr):
         return np.nan
 
     y = y - np.mean(y)
-    # FFT-based autocorrelation: same values as np.correlate, but O(n log n)
-    # instead of O(n^2), which matters for 30-60 s chorus clips.
     autocorr = correlate(y, y, mode="full", method="fft")[len(y) - 1:]
 
     if autocorr[0] <= 1e-12:
@@ -75,7 +73,6 @@ def estimate_hnr_db(y, sr):
 
     autocorr /= autocorr[0]
 
-    # Search plausible fundamental frequencies between 50 and 1000 Hz.
     min_lag = max(1, int(sr / 1000))
     max_lag = min(len(autocorr) - 1, int(sr / 50))
 
@@ -119,14 +116,12 @@ def estimate_sensory_dissonance(y, sr):
     if len(peaks) < 2:
         return 0.0
 
-    # Keep at most the 30 strongest spectral peaks.
     strongest = np.argsort(mean_spectrum[peaks])[-30:]
     peaks = peaks[strongest]
 
     peak_freqs = frequencies[peaks]
     peak_amps = mean_spectrum[peaks]
 
-    # Normalize amplitudes so the score is less dependent on volume.
     peak_amps = peak_amps / (np.max(peak_amps) + 1e-12)
 
     roughness_sum = 0.0
@@ -139,7 +134,6 @@ def estimate_sensory_dissonance(y, sr):
             if f1 <= 0 or f2 <= 0:
                 continue
 
-            # Approximate critical-band interaction.
             min_freq = min(f1, f2)
             freq_difference = abs(f2 - f1)
             scaled_difference = 0.24 * freq_difference / (
@@ -169,12 +163,10 @@ def extract_features(audio_path):
     if y.size == 0:
         raise ValueError("Audio file is empty.")
 
-    # Peak normalization with protection against silence.
     peak = np.max(np.abs(y))
     if peak > 1e-8:
         y = 0.95 * y / peak
 
-    # Frame-level spectral and temporal features.
     mfcc = librosa.feature.mfcc(
         y=y, sr=sr, n_mfcc=N_MFCC,
         n_fft=N_FFT, hop_length=HOP_LENGTH
@@ -206,26 +198,21 @@ def extract_features(audio_path):
 
     features = {}
 
-    # 13 MFCC means.
     for i in range(N_MFCC):
         features[f"mfcc_{i + 1}_mean"] = safe_mean(mfcc[i])
 
-    # Five spectral summaries.
     features["spectral_centroid_mean"] = safe_mean(centroid)
     features["spectral_bandwidth_mean"] = safe_mean(bandwidth)
     features["spectral_rolloff_mean"] = safe_mean(rolloff)
     features["spectral_contrast_mean"] = safe_mean(contrast)
     features["spectral_flatness_mean"] = safe_mean(flatness)
 
-    # Energy and temporal features.
     features["rms_mean"] = safe_mean(rms)
     features["zcr_mean"] = safe_mean(zcr)
 
-    # Twelve chroma means.
     for i in range(12):
         features[f"chroma_{i + 1}_mean"] = safe_mean(chroma[i])
 
-    # Additional harmonic and psychoacoustic estimates.
     features["hnr_estimate_db"] = estimate_hnr_db(y, sr)
     features["sensory_dissonance_estimate"] = estimate_sensory_dissonance(y, sr)
 
@@ -301,7 +288,6 @@ def main():
 
     result_df = pd.DataFrame(rows)
 
-    # Verify the acoustic feature dimension.
     feature_columns = [
         column for column in result_df.columns
         if column.startswith((

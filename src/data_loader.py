@@ -18,7 +18,6 @@ from typing import Tuple, Optional, Dict
 import pandas as pd
 import numpy as np
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
@@ -33,20 +32,19 @@ class DataLoaderConfig:
     RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw" / "PMEmo"
     PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
     REPORTS_FIG_DIR = PROJECT_ROOT / "reports" / "figures"
-    
+
     TRAIN_RATIO = 0.70
     VAL_RATIO = 0.15
     TEST_RATIO = 0.15
     RANDOM_SEED = 42
-    
-    # Expected target column candidates in PMEmo
+
     VALENCE_TARGET_CANDIDATES = [
         "valence_mean", "Valence_mean", "valence", "Valence", "valence_mu",
-        "Valence(mean)"  # PMEmo2019 static_annotations.csv
+        "Valence(mean)"
     ]
     AROUSAL_TARGET_CANDIDATES = [
         "arousal_mean", "Arousal_mean", "arousal", "Arousal", "arousal_mu",
-        "Arousal(mean)"  # PMEmo2019 static_annotations.csv
+        "Arousal(mean)"
     ]
 
 
@@ -81,14 +79,13 @@ def find_annotation_file(raw_dir: Path) -> Optional[Path]:
         if cand.is_file():
             logger.info(f"Found annotations file at: {cand}")
             return cand
-            
-    # Search recursively for any CSV containing 'static' or 'annotation'
+
     for csv_file in raw_dir.rglob("*.csv"):
         name_lower = csv_file.name.lower()
         if "static" in name_lower or "annotation" in name_lower or "valence" in name_lower:
             logger.info(f"Discovered candidate annotation file: {csv_file}")
             return csv_file
-            
+
     return None
 
 
@@ -96,29 +93,26 @@ def load_and_standardize_annotations(annotation_path: Path) -> pd.DataFrame:
     """Load annotations CSV and standardize column names (music_id, valence, arousal)."""
     df = pd.read_csv(annotation_path)
     logger.info(f"Loaded {len(df)} rows from {annotation_path.name}")
-    
-    # Standardize song/music ID column
+
     id_col = None
     for cand in ["music_Id", "music_id", "musicId", "song_id", "id", "Id", "song_Id"]:
         if cand in df.columns:
             id_col = cand
             break
-            
+
     if id_col is None:
-        # Fall back to first column
         id_col = df.columns[0]
         logger.warning(f"No standard ID column found. Falling back to first column: '{id_col}'")
-        
+
     df = df.rename(columns={id_col: "music_id"})
     df["music_id"] = df["music_id"].astype(str).str.strip()
 
-    # Standardize Valence (Target)
     valence_col = None
     for cand in DataLoaderConfig.VALENCE_TARGET_CANDIDATES:
         if cand in df.columns:
             valence_col = cand
             break
-            
+
     if valence_col is None:
         raise ValueError(
             f"Could not identify valence target column in {annotation_path.name}. "
@@ -126,12 +120,11 @@ def load_and_standardize_annotations(annotation_path: Path) -> pd.DataFrame:
         )
     df = df.rename(columns={valence_col: "valence"})
 
-    # Standardize Arousal (Secondary target/covariate)
     for cand in DataLoaderConfig.AROUSAL_TARGET_CANDIDATES:
         if cand in df.columns:
             df = df.rename(columns={cand: "arousal"})
             break
-            
+
     return df
 
 
@@ -153,7 +146,6 @@ def match_audio_with_annotations(
 
     for _, row in annotations_df.iterrows():
         song_id = str(row["music_id"])
-        # Check direct match or zero-padded match
         filepath = audio_map.get(song_id) or audio_map.get(song_id.zfill(4))
         if filepath:
             rec = row.to_dict()
@@ -192,21 +184,19 @@ def create_leakage_free_splits(
     Guarantees no song overlap across splits.
     """
     assert np.isclose(train_ratio + val_ratio + test_ratio, 1.0), "Splits must sum to 1.0"
-    
-    # Shuffle uniquely by music_id
+
     rng = np.random.default_rng(random_seed)
     unique_ids = df["music_id"].unique()
     shuffled_ids = rng.permutation(unique_ids)
-    
+
     n_total = len(shuffled_ids)
     n_train = int(n_total * train_ratio)
     n_val = int(n_total * val_ratio)
-    
+
     train_ids = set(shuffled_ids[:n_train])
     val_ids = set(shuffled_ids[n_train:n_train + n_val])
     test_ids = set(shuffled_ids[n_train + n_val:])
-    
-    # Sanity check: zero overlap
+
     assert len(train_ids.intersection(val_ids)) == 0, "Leakage detected between train and val"
     assert len(train_ids.intersection(test_ids)) == 0, "Leakage detected between train and test"
     assert len(val_ids.intersection(test_ids)) == 0, "Leakage detected between val and test"
@@ -231,7 +221,7 @@ def save_splits(
 ) -> None:
     """Save clean split CSV tables to processed data directory."""
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     train_path = output_dir / "train_split.csv"
     val_path = output_dir / "val_split.csv"
     test_path = output_dir / "test_split.csv"
@@ -240,7 +230,7 @@ def save_splits(
     train_df.to_csv(train_path, index=False)
     val_df.to_csv(val_path, index=False)
     test_df.to_csv(test_path, index=False)
-    
+
     combined = pd.concat([
         train_df.assign(split="train"),
         val_df.assign(split="val"),
@@ -255,7 +245,7 @@ def run_pipeline() -> Optional[Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]]:
     """Execute complete dataset ingestion and splitting pipeline."""
     raw_dir = DataLoaderConfig.RAW_DATA_DIR
     processed_dir = DataLoaderConfig.PROCESSED_DATA_DIR
-    
+
     logger.info("Starting HarmoniX Phase 1 Data Ingestion Pipeline...")
     audio_dir = find_audio_directory(raw_dir)
     annotation_file = find_annotation_file(raw_dir)

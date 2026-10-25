@@ -43,7 +43,6 @@ from scipy.spatial.distance import squareform
 from sklearn.inspection import permutation_importance
 from sklearn.pipeline import Pipeline
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
@@ -67,7 +66,6 @@ class AnalysisConfig:
     STATS_SPLIT = "train"
     EXPLAIN_SPLIT = "val"
 
-    # Tuned pipelines saved by train_ml.py (StandardScaler -> model)
     TREE_MODEL_FILES = {
         "Random_Forest": "random_forest_best.joblib",
         "XGBoost": "xgboost_best.joblib",
@@ -81,8 +79,6 @@ class AnalysisConfig:
     DPI = 300
 
 
-# Figure styling: one blue/orange pair for two-series charts, a blue-grey-red diverging
-# map for signed correlations, and a single-hue blue ramp for magnitudes.
 BLUE = "#2a78d6"
 ORANGE = "#eb6834"
 INK = "#0b0b0b"
@@ -114,7 +110,6 @@ FEATURE_LABELS = {
     "arousal": "Arousal",
 }
 
-# Non-MFCC, non-chroma descriptors with a direct physical reading
 PHYSICS_FEATURES = [
     "spectral_centroid_mean",
     "spectral_bandwidth_mean",
@@ -201,10 +196,6 @@ def save_figure(fig: plt.Figure, filename: str) -> Path:
     return path
 
 
-# ---------------------------------------------------------------------------
-# Data loading
-# ---------------------------------------------------------------------------
-
 def load_dataset(features_path: Path) -> pd.DataFrame:
     """Load the extracted physics features dataset."""
     if not features_path.exists():
@@ -254,10 +245,6 @@ def get_split(df: pd.DataFrame, split_name: str) -> pd.DataFrame:
     return split_df
 
 
-# ---------------------------------------------------------------------------
-# Statistics
-# ---------------------------------------------------------------------------
-
 def fisher_confidence_interval(r: float, n: int, confidence: float = 0.95) -> Tuple[float, float]:
     """Confidence interval for a Pearson correlation via the Fisher z-transform."""
     if n <= 3 or not np.isfinite(r):
@@ -280,7 +267,6 @@ def benjamini_hochberg(p_values: np.ndarray) -> np.ndarray:
     m = len(p)
     order = np.argsort(p)
     scaled = p[order] * m / np.arange(1, m + 1)
-    # Enforce monotonicity from the largest p-value downwards
     scaled = np.minimum.accumulate(scaled[::-1])[::-1]
     adjusted = np.empty(m)
     adjusted[order] = np.clip(scaled, 0.0, 1.0)
@@ -374,10 +360,6 @@ def compute_valence_correlations(df: pd.DataFrame, feature_cols: List[str]) -> p
     return corr_df
 
 
-# ---------------------------------------------------------------------------
-# Correlation figures
-# ---------------------------------------------------------------------------
-
 def plot_valence_correlations(corr_df: pd.DataFrame, n_songs: int) -> None:
     """Dot plot of Pearson (with 95% CI) and Spearman correlation for every feature."""
     plot_df = corr_df.dropna(subset=["spearman_rho"]).sort_values("spearman_rho")
@@ -466,7 +448,6 @@ def plot_correlation_heatmap(
     ax.set_yticklabels(labels, fontsize=tick_size)
     ax.tick_params(length=0)
 
-    # Embolden the target/covariate rows so they stand out in a large matrix
     for tick_labels in (ax.get_xticklabels(), ax.get_yticklabels()):
         for tick in tick_labels:
             if tick.get_text() in ("Valence", "Arousal"):
@@ -527,7 +508,6 @@ def plot_feature_vs_valence(
     else:
         ax.scatter(x, y, color=BLUE, s=20, alpha=0.8, edgecolors="white", linewidths=0.4, zorder=2)
 
-    # OLS fit with a 95% confidence band for the mean response
     slope, intercept = np.polyfit(x, y, 1)
     xs = np.linspace(x.min(), x.max(), 200)
     fit = intercept + slope * xs
@@ -538,7 +518,6 @@ def plot_feature_vs_valence(
                     color=INK, alpha=0.10, linewidth=0, zorder=3)
     ax.plot(xs, fit, color=INK, linewidth=2, zorder=4)
 
-    # Binned means reveal non-linear shape without assuming a functional form
     n_bins = int(min(10, max(2, n // 15)))
     bins = pd.qcut(subset[feature], q=n_bins, duplicates="drop")
     binned = subset.groupby(bins, observed=True).agg(
@@ -702,10 +681,6 @@ def probe_dissonance_estimator(stats_df: pd.DataFrame) -> Optional[Dict[str, obj
     }
 
 
-# ---------------------------------------------------------------------------
-# Model-based importance and SHAP
-# ---------------------------------------------------------------------------
-
 def load_tree_models(n_features: int) -> Dict[str, Pipeline]:
     """Load the tuned tree-model pipelines saved by train_ml.py."""
     models: Dict[str, Pipeline] = {}
@@ -793,7 +768,7 @@ def compute_shap_values(pipe: Pipeline, X: np.ndarray) -> Optional[np.ndarray]:
         from xgboost import DMatrix
 
         contributions = model.get_booster().predict(DMatrix(X_scaled), pred_contribs=True)
-        return np.asarray(contributions)[:, :-1]  # last column is the bias term
+        return np.asarray(contributions)[:, :-1]
 
     try:
         import shap
@@ -856,7 +831,6 @@ def plot_group_importance(group_importance: Dict[str, pd.Series]) -> None:
 
     fig, ax = plt.subplots(figsize=(7.5, 3.8))
     for i, model_name in enumerate(group_df.columns):
-        # First model on top so the bar order matches the legend order
         offset = ((len(group_df.columns) - 1) / 2 - i) * (height + 0.04)
         ax.barh(
             y_pos + offset, group_df[model_name], height=height, color=colors[i % len(colors)],
@@ -897,10 +871,6 @@ def plot_shap_dependence(
     fig.tight_layout()
     save_figure(fig, f"14_shap_dependence_{model_name.lower()}.png")
 
-
-# ---------------------------------------------------------------------------
-# Summary report
-# ---------------------------------------------------------------------------
 
 def write_summary(
     corr_df: pd.DataFrame,
@@ -1015,7 +985,6 @@ def main():
     apply_plot_style()
     AnalysisConfig.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 1. Load features and partitions (test split deliberately not loaded)
     df = load_dataset(AnalysisConfig.FEATURES_PATH)
     feature_cols = get_feature_columns(df)
     stats_df = get_split(df, AnalysisConfig.STATS_SPLIT)
@@ -1025,14 +994,12 @@ def main():
         f"model explanations on '{AnalysisConfig.EXPLAIN_SPLIT}' split ({len(explain_df)} songs)."
     )
 
-    # 2. Feature-valence correlations
     corr_df = compute_valence_correlations(stats_df, feature_cols)
     corr_path = AnalysisConfig.REPORTS_DIR / "feature_valence_correlations.csv"
     corr_df.to_csv(corr_path, index=False)
     logger.info(f"Saved correlation table: {corr_path.relative_to(AnalysisConfig.PROJECT_ROOT)}")
     plot_valence_correlations(corr_df, len(stats_df))
 
-    # 3. Feature-feature correlation heatmaps
     extra_cols = [c for c in (AnalysisConfig.TARGET_COL, AnalysisConfig.COVARIATE_COL) if c in stats_df.columns]
     full_corr = plot_correlation_heatmap(
         stats_df, feature_cols + extra_cols, "05_feature_correlation_heatmap.png",
@@ -1045,7 +1012,6 @@ def main():
         annotate=True, reorder=False
     )
 
-    # 4. Focused analyses
     plot_feature_vs_valence(
         stats_df, "sensory_dissonance_estimate", corr_df, "07_dissonance_vs_valence.png",
         "Sensory dissonance estimate (spectral-peak roughness, a.u.)"
@@ -1057,7 +1023,6 @@ def main():
     plot_dissonance_estimator_check()
     dissonance_probe = probe_dissonance_estimator(stats_df)
 
-    # 5. Model-based importance and SHAP on the validation split
     models = load_tree_models(len(feature_cols))
     X_val = explain_df[feature_cols].to_numpy(dtype=float)
     y_val = explain_df[AnalysisConfig.TARGET_COL].to_numpy(dtype=float)
@@ -1095,7 +1060,6 @@ def main():
     if group_importance:
         plot_group_importance(group_importance)
 
-    # Dependence plots for the best tree model chosen by train_ml.py on validation RMSE
     if shap_by_model:
         metrics_path = AnalysisConfig.MODELS_DIR / "model_metrics.json"
         best_model = None

@@ -46,7 +46,6 @@ from sklearn.metrics import (
     max_error
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
@@ -62,18 +61,17 @@ class EvalConfig:
     MODELS_DIR = PROJECT_ROOT / "models"
     REPORTS_DIR = PROJECT_ROOT / "reports"
     FIGURES_DIR = PROJECT_ROOT / "reports" / "figures"
-    
+
     TARGET_COL = "valence"
     SPLIT_COL = "split"
     RANDOM_SEED = 42
 
-    # Aesthetic styling for publication-grade figures
     PALETTE = {
-        "Ridge": "#3b82f6",          # Vibrant Blue
-        "Random_Forest": "#10b981",  # Emerald Green
-        "XGBoost": "#f59e0b",        # Amber Gold
-        "Actual": "#0f172a",         # Deep Slate
-        "Ideal": "#ef4444"           # Red dashed guide
+        "Ridge": "#3b82f6",
+        "Random_Forest": "#10b981",
+        "XGBoost": "#f59e0b",
+        "Actual": "#0f172a",
+        "Ideal": "#ef4444"
     }
 
 
@@ -156,15 +154,13 @@ def compute_comprehensive_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dic
     evs = explained_variance_score(y_true, y_pred)
     max_err = max_error(y_true, y_pred)
 
-    # Pearson correlation with Fisher-z transformation for confidence interval
     r_val, p_val = stats.pearsonr(y_true, y_pred)
     z = np.arctanh(r_val)
     se = 1.0 / np.sqrt(len(y_true) - 3)
-    z_crit = 1.95996  # 95% CI
+    z_crit = 1.95996
     ci_low = np.tanh(z - z_crit * se)
     ci_high = np.tanh(z + z_crit * se)
 
-    # Spearman rank correlation
     spearman_rho, spearman_p = stats.spearmanr(y_true, y_pred)
 
     residuals = y_true - y_pred
@@ -208,7 +204,6 @@ def generate_figure_16_actual_vs_predicted(
         m = test_metrics[model_name]
         color = EvalConfig.PALETTE[model_name]
 
-        # Calculate absolute error for point coloring
         abs_err = np.abs(y_test - y_pred)
 
         scatter = ax.scatter(
@@ -217,11 +212,9 @@ def generate_figure_16_actual_vs_predicted(
             s=55, alpha=0.85, edgecolors="none"
         )
 
-        # 45-degree ideal diagonal line (y = x)
         limits = [min(np.min(y_test), np.min(y_pred)) - 0.05, max(np.max(y_test), np.max(y_pred)) + 0.05]
         ax.plot(limits, limits, "--", color="#ef4444", linewidth=1.8, label="Ideal Parity ($y = \hat{y}$)")
 
-        # Linear regression trendline through predictions
         slope, intercept, _, _, _ = stats.linregress(y_test, y_pred)
         x_vals = np.linspace(limits[0], limits[1], 100)
         ax.plot(x_vals, slope * x_vals + intercept, color="#0f172a", linewidth=1.6, label=f"Fit (Slope = {slope:.2f})")
@@ -231,7 +224,6 @@ def generate_figure_16_actual_vs_predicted(
         if i == 0:
             ax.set_ylabel("Predicted Valence ($\hat{y}$)")
 
-        # Metric annotation text box
         text_str = (
             f"Test $R^2$ = {m['R2']:.4f}\n"
             f"Pearson $r$ = {m['Pearson_r']:.4f}\n"
@@ -276,18 +268,14 @@ def generate_figure_17_residual_analysis(
         residuals = y_test - y_pred
         color = EvalConfig.PALETTE[model_name]
 
-        # Scatter plot of residuals
         ax.scatter(y_pred, residuals, color=color, s=45, alpha=0.75, edgecolors="white", linewidth=0.5)
 
-        # Zero reference line
         ax.axhline(0, color="#ef4444", linestyle="--", linewidth=1.8, label="Zero Error ($e = 0$)")
 
-        # Standard deviation bounds (+- 2 sigma)
         sigma = np.std(residuals)
         ax.axhline(2 * sigma, color="#94a3b8", linestyle=":", linewidth=1.2, label="$\pm 2\sigma$ Bound")
         ax.axhline(-2 * sigma, color="#94a3b8", linestyle=":", linewidth=1.2)
 
-        # Lowess / Polynomial trend curve to test non-linearity
         z = np.polyfit(y_pred, residuals, 2)
         p = np.poly1d(z)
         x_sort = np.sort(y_pred)
@@ -298,7 +286,6 @@ def generate_figure_17_residual_analysis(
         if i == 0:
             ax.set_ylabel("Residual Error ($y - \hat{y}$)")
 
-        # Annotation highlighting regression to the mean
         text_str = (
             f"Residual $\mu$ = {np.mean(residuals):.4f}\n"
             f"Residual $\sigma$ = {sigma:.4f}\n"
@@ -340,20 +327,17 @@ def generate_figure_18_residual_distribution_qq(
         residuals = y_test - y_pred
         color = EvalConfig.PALETTE[model_name]
 
-        # Top row: Error Histogram & KDE vs Theoretical Normal
         ax_hist = axes[0, i]
         sns.histplot(
             residuals, kde=True, ax=ax_hist, color=color,
             stat="density", bins=16, alpha=0.5, edgecolor="white"
         )
-        # Overlay theoretical normal distribution
         mu, std = stats.norm.fit(residuals)
         xmin, xmax = ax_hist.get_xlim()
         x_axis = np.linspace(xmin, xmax, 100)
         p = stats.norm.pdf(x_axis, mu, std)
         ax_hist.plot(x_axis, p, "k--", linewidth=1.5, label=f"Norm ($\mu$={mu:.2f}, $\sigma$={std:.2f})")
 
-        # Shapiro-Wilk test for normality
         shapiro_stat, shapiro_p = stats.shapiro(residuals)
 
         ax_hist.set_title(f"{display_names[i]} — Error Distribution", pad=10)
@@ -367,7 +351,6 @@ def generate_figure_18_residual_distribution_qq(
         )
         ax_hist.legend(loc="upper right", frameon=True)
 
-        # Bottom row: Q-Q Plot
         ax_qq = axes[1, i]
         (osm, osr), (slope, intercept, r) = stats.probplot(residuals, dist="norm")
         ax_qq.plot(osm, osr, "o", color=color, alpha=0.8, markersize=5)
@@ -404,7 +387,6 @@ def generate_figure_19_generalization_comparison(
     x = np.arange(len(models))
     width = 0.25
 
-    # 1. RMSE Across Splits (Lower is better)
     cv_rmse = [cv_val_metrics["models"][m]["cv_rmse"] for m in models]
     val_rmse = [cv_val_metrics["models"][m]["val_metrics"]["RMSE"] for m in models]
     test_rmse = [test_metrics[m]["RMSE"] for m in models]
@@ -420,13 +402,11 @@ def generate_figure_19_generalization_comparison(
     ax1.legend(loc="upper right", frameon=True)
     ax1.set_ylim(0.08, 0.15)
 
-    # Add numeric labels above bars
     for i in range(len(models)):
         ax1.text(i - width, cv_rmse[i] + 0.0015, f"{cv_rmse[i]:.4f}", ha="center", fontsize=8.5)
         ax1.text(i, val_rmse[i] + 0.0015, f"{val_rmse[i]:.4f}", ha="center", fontsize=8.5)
         ax1.text(i + width, test_rmse[i] + 0.0015, f"{test_rmse[i]:.4f}", ha="center", fontsize=8.5, fontweight="bold")
 
-    # 2. R² and Pearson r on Test Split
     test_r2 = [test_metrics[m]["R2"] for m in models]
     test_pearson = [test_metrics[m]["Pearson_r"] for m in models]
 
@@ -462,7 +442,6 @@ def run_test_evaluation():
     train_df, val_df, test_df, feature_cols = load_dataset_splits(EvalConfig.FEATURES_PATH)
     models = load_trained_models(EvalConfig.MODELS_DIR)
 
-    # Load Bhoomi's tuning results from model_metrics.json
     metrics_json_path = EvalConfig.MODELS_DIR / "model_metrics.json"
     if metrics_json_path.exists():
         with open(metrics_json_path, "r") as f:
@@ -479,15 +458,13 @@ def run_test_evaluation():
     for name, pipeline in models.items():
         logger.info(f"Evaluating {name} on {len(X_test)} untouched test clips...")
         y_pred = pipeline.predict(X_test)
-        
-        # Clip to valid domain bounds [0.0, 1.0] if necessary
+
         y_pred_bounded = np.clip(y_pred, 0.0, 1.0)
         predictions[name] = y_pred_bounded
 
         metrics = compute_comprehensive_metrics(y_test, y_pred_bounded)
         test_metrics[name] = metrics
 
-    # Build master benchmark comparison DataFrame
     benchmark_rows = []
     for name in ["Ridge", "Random_Forest", "XGBoost"]:
         m_test = test_metrics[name]
@@ -513,12 +490,10 @@ def run_test_evaluation():
 
     benchmark_df = pd.DataFrame(benchmark_rows)
 
-    # Save CSV outputs
     test_results_path = EvalConfig.REPORTS_DIR / "test_evaluation_results.csv"
     benchmark_df.to_csv(test_results_path, index=False)
     logger.info(f"Saved test evaluation table to: {test_results_path}")
 
-    # Save detailed JSON metrics
     test_json_path = EvalConfig.MODELS_DIR / "test_metrics.json"
     with open(test_json_path, "w") as f:
         json.dump({
@@ -530,7 +505,6 @@ def run_test_evaluation():
         }, f, indent=2)
     logger.info(f"Saved test metrics JSON to: {test_json_path}")
 
-    # Generate diagnostic figures
     fig16_path = EvalConfig.FIGURES_DIR / "16_actual_vs_predicted.png"
     generate_figure_16_actual_vs_predicted(predictions, y_test, test_metrics, fig16_path)
 
@@ -543,7 +517,6 @@ def run_test_evaluation():
     fig19_path = EvalConfig.FIGURES_DIR / "19_model_generalization_comparison.png"
     generate_figure_19_generalization_comparison(cv_val_metrics, test_metrics, fig19_path)
 
-    # Print summary table
     print("\n" + "=" * 95)
     print("HARMONIX PHASE 1 — TEST SET EVALUATION BENCHMARK (N = 116 SONGS)")
     print("=" * 95)

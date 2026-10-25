@@ -35,7 +35,6 @@ from sklearn.model_selection import KFold, StratifiedKFold, GridSearchCV, Random
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 from xgboost import XGBRegressor
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
@@ -50,12 +49,11 @@ class MLConfig:
     FEATURES_PATH = PROJECT_ROOT / "data" / "processed" / "features_physics.csv"
     MODELS_DIR = PROJECT_ROOT / "models"
     REPORTS_DIR = PROJECT_ROOT / "reports"
-    
+
     TARGET_COL = "valence"
     SPLIT_COL = "split"
     RANDOM_STATE = 42
-    
-    # 34 Acoustic & Physics Descriptors
+
     EXPECTED_FEATURE_COUNT = 34
 
 
@@ -78,7 +76,7 @@ def get_feature_columns(df: pd.DataFrame) -> List[str]:
         if col.startswith(("mfcc_", "spectral_", "rms_", "zcr_", "chroma_"))
         or col in ("hnr_estimate_db", "sensory_dissonance_estimate")
     ]
-    
+
     if len(feature_cols) != MLConfig.EXPECTED_FEATURE_COUNT:
         logger.warning(
             f"Expected {MLConfig.EXPECTED_FEATURE_COUNT} features, but found {len(feature_cols)}. "
@@ -86,7 +84,7 @@ def get_feature_columns(df: pd.DataFrame) -> List[str]:
         )
     else:
         logger.info(f"Verified all {len(feature_cols)} acoustic physics features.")
-        
+
     return feature_cols
 
 
@@ -102,7 +100,7 @@ def prepare_leakage_free_splits(
     """
     if MLConfig.SPLIT_COL not in df.columns:
         raise ValueError(f"Required split column '{MLConfig.SPLIT_COL}' not found in dataset.")
-        
+
     if target_col not in df.columns:
         raise ValueError(f"Target column '{target_col}' not found in dataset.")
 
@@ -140,8 +138,7 @@ def create_balanced_cv_splitter(y_train: np.ndarray, n_splits: int = 5):
     and high valence songs. Falls back gracefully to standard KFold for small sets.
     """
     actual_splits = min(n_splits, max(2, len(y_train)))
-    
-    # Try quantile binning for balanced fold representation
+
     num_bins = min(actual_splits, max(2, len(y_train) // actual_splits))
     try:
         y_binned = pd.qcut(y_train, q=num_bins, labels=False, duplicates="drop")
@@ -174,8 +171,7 @@ def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     mae = float(mean_absolute_error(y_true, y_pred))
     rmse = float(root_mean_squared_error(y_true, y_pred))
     r2 = float(r2_score(y_true, y_pred))
-    
-    # Calculate Pearson correlation (handling constant arrays safely)
+
     if len(y_true) > 1 and np.std(y_true) > 1e-8 and np.std(y_pred) > 1e-8:
         r_val, _ = pearsonr(y_true, y_pred)
         pearson_r = float(r_val)
@@ -198,9 +194,9 @@ def train_and_tune_ridge(
     Tunes L2 regularization parameter alpha via GridSearchCV.
     """
     logger.info("--- Tuning Model 1: Ridge Regression (Baseline Regularized Linear) ---")
-    
+
     pipe = Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),  # e.g. HNR is NaN when no pitch period is found
+        ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler()),
         ("model", Ridge(random_state=MLConfig.RANDOM_STATE))
     ])
@@ -236,7 +232,7 @@ def train_and_tune_random_forest(
     logger.info("--- Tuning Model 2: Random Forest Regressor (Non-Linear Bagging Ensemble) ---")
 
     pipe = Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),  # e.g. HNR is NaN when no pitch period is found
+        ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler()),
         ("model", RandomForestRegressor(random_state=MLConfig.RANDOM_STATE))
     ])
@@ -276,7 +272,7 @@ def train_and_tune_xgboost(
     logger.info("--- Tuning Model 3: XGBoost Regressor (Gradient Tree Boosting) ---")
 
     pipe = Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),  # e.g. HNR is NaN when no pitch period is found
+        ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler()),
         ("model", XGBRegressor(
             random_state=MLConfig.RANDOM_STATE,
@@ -327,41 +323,35 @@ def save_artifacts(
     models_dir.mkdir(parents=True, exist_ok=True)
     reports_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save each individual model pipeline
     for name, model_pipe in models.items():
         filename = f"{name.lower().replace(' ', '_')}_best.joblib"
         target_path = models_dir / filename
         joblib.dump(model_pipe, target_path)
         logger.info(f"Saved {name} model pipeline to: {target_path}")
 
-    # Save overall best winning model pipeline
     best_pipe = models[best_model_name]
     best_model_path = models_dir / "best_model.joblib"
     joblib.dump(best_pipe, best_model_path)
     logger.info(f"Saved overall best model ({best_model_name}) to: {best_model_path}")
 
-    # Save fitted scaler extracted from best pipeline for standalone inference
     scaler = best_pipe.named_steps.get("scaler")
     if scaler is not None:
         scaler_path = models_dir / "scaler.joblib"
         joblib.dump(scaler, scaler_path)
         logger.info(f"Saved fitted StandardScaler to: {scaler_path}")
 
-    # Save feature names list
     features_json_path = models_dir / "feature_names.json"
     with open(features_json_path, "w") as f:
         json.dump(feature_cols, f, indent=2)
     logger.info(f"Saved feature names list to: {features_json_path}")
 
-    # Save model comparison and tuning results
     results_csv_path = models_dir / "model_comparison.csv"
     results_df.to_csv(results_csv_path, index=False)
-    
+
     report_csv_path = reports_dir / "model_tuning_results.csv"
     results_df.to_csv(report_csv_path, index=False)
     logger.info(f"Saved tuning results table to: {results_csv_path} and {report_csv_path}")
 
-    # Save JSON metrics summary
     metrics_json_path = models_dir / "model_metrics.json"
     with open(metrics_json_path, "w") as f:
         json.dump(metrics_summary, f, indent=2)
@@ -373,42 +363,34 @@ def main():
     logger.info("HarmoniX Phase 1 | Machine Learning Modeling & Tuning (Bhoomi)")
     logger.info("=================================================================")
 
-    # 1. Load physics features
     df = load_dataset(MLConfig.FEATURES_PATH)
     feature_cols = get_feature_columns(df)
 
-    # 2. Prepare leakage-free partitions
     X_train, y_train, X_val, y_val, X_test, y_test = prepare_leakage_free_splits(
         df, feature_cols, MLConfig.TARGET_COL
     )
 
-    # 3. Setup balanced cross-validation
     cv = create_balanced_cv_splitter(y_train, n_splits=5)
 
-    # 4. Train and tune models
     models: Dict[str, Pipeline] = {}
     best_params: Dict[str, Dict[str, Any]] = {}
     cv_scores: Dict[str, float] = {}
 
-    # Model 1: Ridge Regression
     ridge_pipe, ridge_params, ridge_cv_rmse = train_and_tune_ridge(X_train, y_train, cv)
     models["Ridge"] = ridge_pipe
     best_params["Ridge"] = ridge_params
     cv_scores["Ridge"] = ridge_cv_rmse
 
-    # Model 2: Random Forest Regressor
     rf_pipe, rf_params, rf_cv_rmse = train_and_tune_random_forest(X_train, y_train, cv)
     models["Random_Forest"] = rf_pipe
     best_params["Random_Forest"] = rf_params
     cv_scores["Random_Forest"] = rf_cv_rmse
 
-    # Model 3: XGBoost Regressor
     xgb_pipe, xgb_params, xgb_cv_rmse = train_and_tune_xgboost(X_train, y_train, cv)
     models["XGBoost"] = xgb_pipe
     best_params["XGBoost"] = xgb_params
     cv_scores["XGBoost"] = xgb_cv_rmse
 
-    # 5. Evaluate all models on held-out Validation set
     logger.info("\n=================================================================")
     logger.info("Validation Set Evaluation (Model Selection Benchmark)")
     logger.info("=================================================================")
@@ -423,7 +405,6 @@ def main():
     }
 
     for name, pipe in models.items():
-        # Predict with bounded range [0.0, 1.0]
         y_val_pred = predict_bounded(pipe, X_val)
         val_metrics = compute_metrics(y_val, y_val_pred)
 
@@ -457,7 +438,6 @@ def main():
 
     results_df = pd.DataFrame(comparison_records)
 
-    # 6. Model selection based on lowest Validation RMSE
     best_row = results_df.sort_values(by=["Val_RMSE", "Val_MAE"]).iloc[0]
     best_model_name = best_row["Model"]
     metrics_summary["best_model"] = best_model_name
@@ -468,7 +448,6 @@ def main():
     logger.info("=================================================================\n")
     print(results_df.to_string(index=False))
 
-    # 7. Serialize artifacts
     save_artifacts(models, best_model_name, feature_cols, results_df, metrics_summary)
     logger.info("All model artifacts and tuning results successfully saved!")
 

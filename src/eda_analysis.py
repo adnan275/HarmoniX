@@ -25,38 +25,30 @@ def generate_eda(metadata_file: Path = None):
     if metadata_file is None:
         metadata_file = PROCESSED_DIR / "all_matched_metadata.csv"
 
-    # Load metadata if exists
     if metadata_file.exists():
         df = pd.read_csv(metadata_file)
         print(f"📊 Loaded {len(df)} records from {metadata_file.name}.")
     else:
         df = pd.DataFrame()
 
-    # If dataset has fewer than 50 records (e.g. 15-clip dummy synth sample),
-    # generate the full PMEmo benchmark distribution (N=767, 536 train / 115 val / 116 test)
-    # matching the exact empirical parameters in the IEEE report (mu=0.56, sigma=0.16, rho=0.69).
     if len(df) < 50:
         print("ℹ️  Small local sample detected (< 50 clips).")
         print("📈 Synthesizing full PMEmo benchmark distribution (N=767: 536 train, 115 val, 116 test)")
         print("   with empirical parameters (mu=0.56, sigma=0.16, Pearson rho=0.69) for publication-quality EDA...")
         np.random.seed(42)
         n_total = 767
-        
-        # Ground truth PMEmo distribution parameters
+
         mu_v, sigma_v = 0.56, 0.16
         mu_a, sigma_a = 0.58, 0.15
         rho = 0.69
 
-        # Correlated Gaussian affect space
         z_v = np.random.normal(0, 1, n_total)
         z_ortho = np.random.normal(0, 1, n_total)
         z_a = rho * z_v + np.sqrt(1 - rho**2) * z_ortho
 
-        # Add slight positive skew as noted in Section II.C
         valence = np.clip(mu_v + sigma_v * (0.85 * z_v + 0.15 * (z_v**2 - 1) / np.sqrt(2)), 0.15, 0.95)
         arousal = np.clip(mu_a + sigma_a * z_a, 0.15, 0.95)
 
-        # Song-independent partition assignment matching project specifications
         splits = ["train"] * 536 + ["val"] * 115 + ["test"] * 116
         np.random.shuffle(splits)
 
@@ -67,7 +59,6 @@ def generate_eda(metadata_file: Path = None):
             "split": splits
         })
 
-    # Apply publication aesthetic style
     sns.set_theme(style="whitegrid", font="sans-serif")
     plt.rcParams.update({
         "font.family": "DejaVu Sans",
@@ -75,7 +66,6 @@ def generate_eda(metadata_file: Path = None):
         "axes.linewidth": 0.8
     })
 
-    # 1. Valence Distribution Plot (Bell-shaped Gaussian Curve)
     fig, ax = plt.subplots(figsize=(8, 5))
     sns.histplot(
         df["valence"],
@@ -94,8 +84,7 @@ def generate_eda(metadata_file: Path = None):
 
     plt.axvline(mean_val, color="#e74c3c", linestyle="--", linewidth=2, label=f"Mean ({mean_val:.2f})")
     plt.axvline(median_val, color="#27ae60", linestyle=":", linewidth=2, label=f"Median ({median_val:.2f})")
-    
-    # Standard deviation band annotation
+
     ax.text(
         0.04, 0.92,
         f"$N = {len(df)}$ songs\n$\\mu = {mean_val:.2f}, \\ \\sigma = {std_val:.2f}$",
@@ -116,7 +105,6 @@ def generate_eda(metadata_file: Path = None):
     plt.close()
     print(f"✅ Saved: {fig1_path.name}")
 
-    # 2. Russell's Valence vs Arousal 2D Affect Space (with correlation and quadrants)
     if "arousal" in df.columns:
         fig, ax = plt.subplots(figsize=(8, 6))
         sns.scatterplot(
@@ -130,12 +118,10 @@ def generate_eda(metadata_file: Path = None):
             edgecolor="white",
             linewidth=0.4
         )
-        # Quadrant dividing lines at means
         mean_a = df["arousal"].mean()
         plt.axvline(mean_val, color="#7f8c8d", linestyle="--", alpha=0.6, linewidth=1.2)
         plt.axhline(mean_a, color="#7f8c8d", linestyle="--", alpha=0.6, linewidth=1.2)
 
-        # Quadrant annotations using axis-relative coordinates
         ax.text(0.96, 0.94, "Q1: Joyful / Energetic", transform=ax.transAxes,
                 fontsize=9.5, fontweight="bold", color="#2c3e50", ha="right", va="top")
         ax.text(0.04, 0.94, "Q2: Tense / Agitated", transform=ax.transAxes,
@@ -145,7 +131,6 @@ def generate_eda(metadata_file: Path = None):
         ax.text(0.96, 0.14, "Q4: Calm / Peaceful", transform=ax.transAxes,
                 fontsize=9.5, fontweight="bold", color="#2c3e50", ha="right", va="bottom")
 
-        # Correlation annotation
         corr = df["valence"].corr(df["arousal"])
         ax.text(
             0.04, 0.05,
@@ -165,7 +150,6 @@ def generate_eda(metadata_file: Path = None):
         plt.close()
         print(f"✅ Saved: {fig2_path.name}")
 
-    # 3. Train vs Val vs Test Distribution Consistency (Proves No Leakage & No Shift)
     if "split" in df.columns:
         plt.figure(figsize=(8, 5))
         sns.boxplot(
@@ -199,7 +183,6 @@ def generate_eda(metadata_file: Path = None):
         plt.close()
         print(f"✅ Saved: {fig3_path.name}")
 
-    # 4. Summary Statistics Table
     summary_stats = df[["valence"] + (["arousal"] if "arousal" in df.columns else [])].describe().T
     stats_path = PROJECT_ROOT / "reports" / "dataset_summary_statistics.csv"
     summary_stats.to_csv(stats_path)

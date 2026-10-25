@@ -27,7 +27,6 @@ def inspect():
         print(f"❌ Error: Directory '{RAW_DIR}' does not exist.")
         return
 
-    # Check Audio Files
     audio_files = list(RAW_DIR.rglob("*.mp3")) + list(RAW_DIR.rglob("*.wav"))
     print(f"\n📂 Audio Files Found: {len(audio_files)}")
     if audio_files:
@@ -38,7 +37,6 @@ def inspect():
     else:
         print("   ⚠️  No .mp3 or .wav audio files found yet.")
 
-    # Check CSV Files
     csv_files = list(RAW_DIR.rglob("*.csv"))
     print(f"\n📊 CSV / Annotation Files Found: {len(csv_files)}")
     for cf in csv_files:
@@ -46,7 +44,6 @@ def inspect():
         try:
             df = pd.read_csv(cf)
             print(f"     Rows: {len(df)}, Columns: {list(df.columns[:8])}")
-            # Check for valence
             val_cols = [c for c in df.columns if "val" in c.lower()]
             if val_cols:
                 print(f"     🎯 Valence target candidate found: {val_cols}")
