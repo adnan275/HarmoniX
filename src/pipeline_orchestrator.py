@@ -238,3 +238,4 @@ def predict_audio(audio_file: Path) -> Dict[str, Any]:
     """Top-level shared contract function."""
     orchestrator = get_orchestrator()
     return orchestrator.predict_audio(audio_file)
+
