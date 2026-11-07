@@ -202,21 +202,6 @@ else:
             audio_label = uploaded_file.name
             genre_badge = "Custom Input"
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("""
-<div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px;">
-    <div style="font-size: 10px; text-transform: uppercase; color: #38bdf8; font-weight: 700; letter-spacing: 1px;">Phase 2 Core Team</div>
-    <div style="font-size: 13px; color: #f1f5f9; font-weight: 700; margin-top: 4px;">Adnan Rizvi</div>
-    <div style="font-size: 11px; color: #94a3b8;">Lead Architect & UI Engineer</div>
-    <div style="font-size: 11px; color: #64748b; margin-top: 6px; line-height: 1.4;">
-        Aditya: DSP Spectrograms<br/>
-        Bhoomi: PyTorch CNN & Fusion<br/>
-        Praanshu: Grad-CAM Explainability<br/>
-        Vani: Benchmark Evaluation
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
 
 col_title, col_status = st.columns([2, 1])
 
