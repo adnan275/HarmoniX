@@ -52,25 +52,25 @@ def get_emotional_quadrant(valence: float, arousal: float) -> Tuple[str, str, st
     if valence >= v_mid and arousal >= a_mid:
         return (
             "Q1: Joyful / Energetic",
-            "✨ 😊",
+            "",
             "Uplifting harmonies, bright spectral balance, and lively energy."
         )
     elif valence >= v_mid and arousal < a_mid:
         return (
             "Q4: Calm / Peaceful",
-            "🌿 🕊️",
+            "",
             "Harmonious chords, gentle dynamics, relaxing and comforting tone."
         )
     elif valence < v_mid and arousal < a_mid:
         return (
             "Q3: Melancholic / Sad",
-            "🌧️ 🥀",
+            "",
             "Subdued dynamics, minor key signatures, reflective or sorrowful mood."
         )
     else:
         return (
             "Q2: Tense / Agitated",
-            "⚡ 💥",
+            "",
             "High acoustic dissonance, abrasive textures, intense or tense energy."
         )
 

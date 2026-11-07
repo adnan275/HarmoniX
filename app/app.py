@@ -2,12 +2,7 @@
 HarmoniX | AI Music Emotion Recognition Studio
 Author: Adnan Rizvi (Lead Architect & Product Engineering Lead)
 
-Ultra-Aesthetic Dark Audio Studio Edition (Spotify / Teenage Engineering Aesthetic):
-- Deep Matte Pitch-Black Canvas with Subtle Studio Lighting
-- Live Equalizer Pulse & Sleek Now-Playing Card
-- High-Tech Radar-Style 2D Mood Compass (Plotly)
-- Glowing Waveform Timeline with Gradient Area Shading
-- Multi-Model Consensus Telemetry & Full 34-Descriptor DNA
+Minimalist Studio Edition (No Emojis, Pure Dark Scientific Aesthetic)
 """
 
 import sys
@@ -30,7 +25,6 @@ from src.multicultural_loader import scan_multicultural_directory, create_sample
 # 1. Page Configuration
 st.set_page_config(
     page_title="HarmoniX Studio",
-    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -44,8 +38,8 @@ st.markdown("""
     .stApp {
         background-color: #050608 !important;
         background-image: 
-            radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 45%),
-            radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.04) 0%, transparent 40%);
+            radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.04) 0%, transparent 45%),
+            radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.03) 0%, transparent 40%);
         color: #f1f5f9 !important;
         font-family: 'Space Grotesk', -apple-system, sans-serif !important;
     }
@@ -69,24 +63,12 @@ st.markdown("""
         border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
 
-    /* Studio Frosted Glass Panel */
-    .studio-panel {
-        background: rgba(13, 16, 24, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 16px;
-        padding: 20px 24px;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-        margin-bottom: 16px;
-    }
-
     /* Equalizer Bar Animation */
     .eq-container {
         display: inline-flex;
         align-items: flex-end;
         gap: 3px;
-        height: 18px;
+        height: 16px;
         margin-left: 8px;
     }
     .eq-bar {
@@ -135,43 +117,38 @@ st.markdown("""
         color: #ffffff;
     }
 
-    /* Glowing Quadrant Badges */
+    /* Minimal Quadrant Badges */
     .badge-quad {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 9999px;
+        padding: 5px 12px;
+        border-radius: 6px;
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.02em;
     }
     .badge-joyful {
-        background: rgba(16, 185, 129, 0.12);
+        background: rgba(16, 185, 129, 0.1);
         color: #34d399;
-        border: 1px solid rgba(52, 211, 153, 0.35);
-        box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(52, 211, 153, 0.3);
     }
     .badge-tense {
-        background: rgba(239, 68, 68, 0.12);
+        background: rgba(239, 68, 68, 0.1);
         color: #f87171;
-        border: 1px solid rgba(248, 113, 113, 0.35);
-        box-shadow: 0 0 16px rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(248, 113, 113, 0.3);
     }
     .badge-melancholic {
-        background: rgba(168, 85, 247, 0.12);
+        background: rgba(168, 85, 247, 0.1);
         color: #c084fc;
-        border: 1px solid rgba(192, 132, 252, 0.35);
-        box-shadow: 0 0 16px rgba(168, 85, 247, 0.2);
+        border: 1px solid rgba(192, 132, 252, 0.3);
     }
     .badge-calm {
-        background: rgba(59, 130, 246, 0.12);
+        background: rgba(59, 130, 246, 0.1);
         color: #60a5fa;
-        border: 1px solid rgba(96, 165, 250, 0.35);
-        box-shadow: 0 0 16px rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(96, 165, 250, 0.3);
     }
 
-    /* Minimal Native Audio Bar */
+    /* Audio Element Inversion */
     audio {
         width: 100% !important;
         border-radius: 8px;
@@ -185,8 +162,8 @@ st.markdown("""
 # 3. Sidebar: Multi-Genre Studio Controls
 st.sidebar.markdown("""
 <div style="padding: 12px 0 18px 0;">
-    <div style="font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #38bdf8; text-transform: uppercase;">HarmoniX Laboratory</div>
-    <div style="font-size: 19px; font-weight: 700; color: #ffffff; margin-top: 2px;">Audio Ingestion</div>
+    <div style="font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #38bdf8; text-transform: uppercase;">Acoustic Laboratory</div>
+    <div style="font-size: 18px; font-weight: 700; color: #ffffff; margin-top: 2px;">Audio Ingestion</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -198,7 +175,7 @@ diverse_tracks = scan_multicultural_directory(test_diverse_dir)
 
 source_choice = st.sidebar.radio(
     "Select Mode",
-    ["📁 Multicultural Preset Benchmarks", "⬆️ Upload Song (.mp3, .wav)"],
+    ["Multicultural Presets", "Upload Audio (.mp3, .wav)"],
     index=0
 )
 
@@ -206,13 +183,15 @@ selected_audio_path = None
 audio_label = ""
 genre_badge = ""
 
-if source_choice == "📁 Multicultural Preset Benchmarks":
+if source_choice == "Multicultural Presets":
     if diverse_tracks:
-        genre_options = {f"{t['genre']} • {t['title']}": (t['filepath'], t['genre']) for t in diverse_tracks}
-        chosen_title = st.sidebar.selectbox("Track:", list(genre_options.keys()))
+        genre_options = {f"{t['genre']} / {t['title']}": (t['filepath'], t['genre']) for t in diverse_tracks}
+        chosen_title = st.sidebar.selectbox("Benchmark Clip:", list(genre_options.keys()))
         selected_audio_path = Path(genre_options[chosen_title][0])
         genre_badge = genre_options[chosen_title][1]
-        audio_label = chosen_title.split(" • ")[1]
+        audio_label = chosen_title.split(" / ")[1]
+    else:
+        st.sidebar.warning("No pre-loaded audio tracks found.")
 else:
     uploaded_file = st.sidebar.file_uploader(
         "Upload Audio File",
@@ -233,10 +212,10 @@ st.sidebar.markdown("""
     <div style="font-size: 13px; color: #f1f5f9; font-weight: 700; margin-top: 4px;">Adnan Rizvi</div>
     <div style="font-size: 11px; color: #94a3b8;">Lead Architect & UI Engineer</div>
     <div style="font-size: 11px; color: #64748b; margin-top: 6px; line-height: 1.4;">
-        • Aditya: DSP Spectrograms<br/>
-        • Bhoomi: PyTorch CNN & Fusion<br/>
-        • Praanshu: Grad-CAM Explainability<br/>
-        • Vani: Benchmark Evaluation
+        Aditya: DSP Spectrograms<br/>
+        Bhoomi: PyTorch CNN & Fusion<br/>
+        Praanshu: Grad-CAM Explainability<br/>
+        Vani: Benchmark Evaluation
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -253,14 +232,14 @@ with col_title:
             <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
         </div>
     </div>
-    <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Multimodal Music Emotion Recognition • 2D Spectrogram Neural Intelligence</div>
+    <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Multimodal Music Emotion Recognition | 2D Spectrogram Neural Intelligence</div>
     """, unsafe_allow_html=True)
 
 with col_status:
     st.markdown("""
     <div style="text-align: right; padding-top: 4px;">
         <span style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700;">
-            ● ENGINE READY
+            ENGINE READY
         </span>
     </div>
     """, unsafe_allow_html=True)
@@ -268,7 +247,7 @@ with col_status:
 st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
 if selected_audio_path is None:
-    st.info("👈 Select a benchmark audio track or upload an MP3 from the sidebar to launch the studio.")
+    st.info("Select a benchmark audio track or upload an audio file from the sidebar to launch the studio.")
     st.stop()
 
 
@@ -279,7 +258,7 @@ with st.container():
     with c_play:
         st.markdown(f"""
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
-            <div style="font-size: 15px; font-weight: 700; color: #ffffff;">🎵 {audio_label}</div>
+            <div style="font-size: 15px; font-weight: 700; color: #ffffff;">{audio_label}</div>
             <span style="background: rgba(255,255,255,0.06); color: #94a3b8; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600;">{genre_badge}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -319,7 +298,6 @@ st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 v_score = results["primary_valence"]
 a_score = results["estimated_arousal"]
 quadrant = results["emotional_quadrant"]
-emoji = results["emoji"]
 
 badge_class = "badge-joyful" if "Q1" in quadrant else "badge-tense" if "Q2" in quadrant else "badge-melancholic" if "Q3" in quadrant else "badge-calm"
 
@@ -332,7 +310,7 @@ with m1:
         <div class="card-label">Predicted Valence</div>
         <div class="card-number" style="color: {v_col};">{v_score:.3f}</div>
         <div style="font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;">
-            {'▲ Positive / Uplifting' if v_score >= 0.50 else '▼ Somber / Minor Mood'}
+            {'Positive / Uplifting' if v_score >= 0.50 else 'Somber / Minor Mood'}
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -343,7 +321,7 @@ with m2:
         <div class="card-label">Estimated Arousal</div>
         <div class="card-number" style="color: #60a5fa;">{a_score:.3f}</div>
         <div style="font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;">
-            {'▲ Dynamic Energy' if a_score >= 0.50 else '▼ Subdued / Calm'}
+            {'Dynamic Energy' if a_score >= 0.50 else 'Subdued / Calm'}
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -352,7 +330,7 @@ with m3:
     st.markdown(f"""
     <div class="metric-card">
         <div class="card-label">Emotional Space</div>
-        <div style="margin-top: 6px;"><span class="badge-quad {badge_class}">{quadrant.split(':')[1].strip()} {emoji}</span></div>
+        <div style="margin-top: 6px;"><span class="badge-quad {badge_class}">{quadrant.split(':')[1].strip()}</span></div>
         <div style="font-size: 11px; color: #64748b; margin-top: 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
             {results["mood_description"]}
         </div>
@@ -380,7 +358,7 @@ col_radar, col_ensemble = st.columns([1.3, 1])
 with col_radar:
     st.markdown("""
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-        <span style="font-size: 14px; font-weight: 700; color: #ffffff;">🧭 Russell's 2D Mood Compass (Radar Display)</span>
+        <span style="font-size: 14px; font-weight: 700; color: #ffffff;">Russell's 2D Mood Compass (Radar Display)</span>
         <span style="font-size: 11px; color: #64748b; font-family:'JetBrains Mono';">V: {v_score:.2f} | A: {a_score:.2f}</span>
     </div>
     """.format(v_score=v_score, a_score=a_score), unsafe_allow_html=True)
@@ -430,8 +408,8 @@ with col_radar:
     ))
 
     fig_compass.update_layout(
-        xaxis=dict(title=dict(text="Valence (Negative → Positive)", font=dict(size=11, color="#64748b")), range=[0.0, 1.0], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
-        yaxis=dict(title=dict(text="Arousal (Calm → Energetic)", font=dict(size=11, color="#64748b")), range=[0.0, 1.0], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
+        xaxis=dict(title=dict(text="Valence (Negative to Positive)", font=dict(size=11, color="#64748b")), range=[0.0, 1.0], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
+        yaxis=dict(title=dict(text="Arousal (Calm to Energetic)", font=dict(size=11, color="#64748b")), range=[0.0, 1.0], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
         plot_bgcolor="#07090e",
         paper_bgcolor="#090c12",
         margin=dict(l=40, r=40, t=10, b=40),
@@ -443,7 +421,7 @@ with col_radar:
 with col_ensemble:
     st.markdown("""
     <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">
-        🤖 Model Ensemble Agreement
+        Model Ensemble Agreement
     </div>
     """, unsafe_allow_html=True)
 
@@ -486,7 +464,7 @@ st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 # 8. Dynamic Emotion Trajectory Across Timeline
 st.markdown("""
 <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
-    📈 Dynamic Emotion Trajectory Across Timeline
+    Dynamic Emotion Trajectory Across Timeline
 </div>
 <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
     3-second rolling analysis windows capturing emotional progression from intro to drop.
@@ -536,7 +514,7 @@ else:
 
 
 # 9. Acoustic Physics Telemetry Breakdown
-with st.expander("🎼 View Detailed Acoustic Physics DNA (34 Descriptors)"):
+with st.expander("View Detailed Acoustic Physics DNA (34 Descriptors)"):
     st.markdown("##### Core Acoustic Driver Highlights")
     cols = st.columns(len(results["acoustic_highlights"]))
     for col, (k, v) in zip(cols, results["acoustic_highlights"].items()):
