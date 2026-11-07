@@ -22,14 +22,12 @@ import plotly.graph_objects as go
 from src.pipeline_orchestrator import predict_audio
 from src.multicultural_loader import scan_multicultural_directory, create_sample_diverse_dataset
 
-# 1. Page Configuration
 st.set_page_config(
     page_title="HarmoniX Studio",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. Studio Dark Theme & Micro-Interactions CSS
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
@@ -159,7 +157,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# 3. Sidebar: Multi-Genre Studio Controls
 st.sidebar.markdown("""
 <div style="padding: 12px 0 18px 0;">
     <div style="font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #38bdf8; text-transform: uppercase;">Acoustic Laboratory</div>
@@ -221,7 +218,6 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 
-# 4. Studio Header
 col_title, col_status = st.columns([2, 1])
 
 with col_title:
@@ -251,7 +247,6 @@ if selected_audio_path is None:
     st.stop()
 
 
-# 5. Live Audio Deck & Ingestion Telemetry
 with st.container():
     c_play, c_spec = st.columns([1.5, 1])
 
@@ -266,7 +261,6 @@ with st.container():
             audio_bytes = f_audio.read()
         st.audio(audio_bytes, format="audio/wav")
 
-    # Run inference engine
     with st.spinner("Analyzing audio frequencies and generating neural predictions..."):
         try:
             results = predict_audio(selected_audio_path)
@@ -293,8 +287,6 @@ with st.container():
 
 st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-
-# 6. Core Emotion Telemetry Row
 v_score = results["primary_valence"]
 a_score = results["estimated_arousal"]
 quadrant = results["emotional_quadrant"]
@@ -351,8 +343,6 @@ with m4:
 
 st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 
-
-# 7. High-Tech Radar Mood Compass + Ensemble Comparison
 col_radar, col_ensemble = st.columns([1.3, 1])
 
 with col_radar:
@@ -365,13 +355,11 @@ with col_radar:
 
     fig_compass = go.Figure()
 
-    # Aesthetic Quadrants Shading
     fig_compass.add_shape(type="rect", x0=0.5, y0=0.5, x1=1.0, y1=1.0, fillcolor="rgba(16, 185, 129, 0.06)", line_width=0)
     fig_compass.add_shape(type="rect", x0=0.0, y0=0.5, x1=0.5, y1=1.0, fillcolor="rgba(239, 68, 68, 0.06)", line_width=0)
     fig_compass.add_shape(type="rect", x0=0.0, y0=0.0, x1=0.5, y1=0.5, fillcolor="rgba(168, 85, 247, 0.06)", line_width=0)
     fig_compass.add_shape(type="rect", x0=0.5, y0=0.0, x1=1.0, y1=0.5, fillcolor="rgba(59, 130, 246, 0.06)", line_width=0)
 
-    # Concentric Radar Rings
     for r in [0.25, 0.45]:
         fig_compass.add_shape(
             type="circle",
@@ -379,24 +367,20 @@ with col_radar:
             line=dict(color="rgba(255, 255, 255, 0.04)", width=1, dash="dot")
         )
 
-    # Crosshair Axes
     fig_compass.add_hline(y=0.5, line_dash="solid", line_color="rgba(255, 255, 255, 0.12)", line_width=1)
     fig_compass.add_vline(x=0.5, line_dash="solid", line_color="rgba(255, 255, 255, 0.12)", line_width=1)
 
-    # Quadrant Callouts
     fig_compass.add_annotation(x=0.82, y=0.92, text="Q1: JOYFUL", showarrow=False, font=dict(color="#34d399", size=10, family="Space Grotesk"))
     fig_compass.add_annotation(x=0.18, y=0.92, text="Q2: TENSE", showarrow=False, font=dict(color="#f87171", size=10, family="Space Grotesk"))
     fig_compass.add_annotation(x=0.18, y=0.08, text="Q3: MELANCHOLIC", showarrow=False, font=dict(color="#c084fc", size=10, family="Space Grotesk"))
     fig_compass.add_annotation(x=0.82, y=0.08, text="Q4: CALM", showarrow=False, font=dict(color="#60a5fa", size=10, family="Space Grotesk"))
 
-    # Ambient Pulsing Ring
     fig_compass.add_trace(go.Scatter(
         x=[v_score], y=[a_score],
         mode="markers",
         marker=dict(size=28, color="rgba(56, 189, 248, 0.2)", symbol="circle"),
         hoverinfo="skip"
     ))
-    # Diamond Pinpoint
     fig_compass.add_trace(go.Scatter(
         x=[v_score], y=[a_score],
         mode="markers+text",
@@ -460,8 +444,6 @@ with col_ensemble:
 
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-
-# 8. Dynamic Emotion Trajectory Across Timeline
 st.markdown("""
 <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
     Dynamic Emotion Trajectory Across Timeline
@@ -477,7 +459,6 @@ if trajectory and len(trajectory) > 1:
 
     fig_traj = go.Figure()
 
-    # Glowing Cyan-Blue Spline
     fig_traj.add_trace(go.Scatter(
         x=df_traj["time_start_sec"],
         y=df_traj["valence"],
@@ -489,7 +470,6 @@ if trajectory and len(trajectory) > 1:
         name="Valence Track"
     ))
 
-    # Neutral Reference Line
     fig_traj.add_hline(
         y=0.5,
         line_dash="dot",
@@ -513,7 +493,6 @@ else:
     st.info("Short audio clip: Evaluated as a single temporal frame.")
 
 
-# 9. Acoustic Physics Telemetry Breakdown
 with st.expander("View Detailed Acoustic Physics DNA (34 Descriptors)"):
     st.markdown("##### Core Acoustic Driver Highlights")
     cols = st.columns(len(results["acoustic_highlights"]))
@@ -531,7 +510,6 @@ with st.expander("View Detailed Acoustic Physics DNA (34 Descriptors)"):
     df_features.columns = ["Acoustic Feature Name", "Value"]
     st.dataframe(df_features, height=220, use_container_width=True)
 
-# 10. Minimalist Studio Footer
 st.markdown("""
 <div style="text-align: center; color: #475569; font-size: 11.5px; margin-top: 40px; padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.05);">
     <span style="font-weight: 700; color: #94a3b8;">HarmoniX Research Group</span> • Phase 2 Master Implementation<br/>

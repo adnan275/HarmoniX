@@ -44,7 +44,6 @@ def load_and_normalize(audio_path: Path) -> Tuple[np.ndarray, int, Dict[str, Any
     if not audio_path.exists():
         raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
-    # Inspect original metadata using soundfile or librosa
     try:
         info = sf.info(str(audio_path))
         orig_sr = info.samplerate
@@ -55,13 +54,11 @@ def load_and_normalize(audio_path: Path) -> Tuple[np.ndarray, int, Dict[str, Any
         orig_channels = "unknown"
         orig_format = audio_path.suffix.upper().replace(".", "")
 
-    # Load and resample to TARGET_SAMPLE_RATE as mono
     try:
         y, sr = librosa.load(str(audio_path), sr=TARGET_SAMPLE_RATE, mono=True)
     except Exception as e:
         raise ValueError(f"Failed to decode audio file '{audio_path.name}': {e}")
 
-    # Validation checks
     if y is None or len(y) == 0:
         raise ValueError(f"Audio file '{audio_path.name}' contains zero samples (empty).")
 
@@ -69,12 +66,10 @@ def load_and_normalize(audio_path: Path) -> Tuple[np.ndarray, int, Dict[str, Any
     if duration < 0.5:
         raise ValueError(f"Audio file duration ({duration:.2f}s) is too short for analysis (min 0.5s).")
 
-    # Guard against completely silent / corrupted flatline audio
     current_peak = float(np.max(np.abs(y)))
     if current_peak < MIN_AUDIBLE_PEAK:
         raise ValueError(f"Audio file '{audio_path.name}' is completely silent (peak amplitude < {MIN_AUDIBLE_PEAK}).")
 
-    # Peak normalization to target [-0.95, +0.95]
     y_norm = (y / current_peak) * PEAK_TARGET
 
     metadata = {
@@ -130,28 +125,28 @@ def create_sample_diverse_dataset(output_dir: Path) -> List[Path]:
 
     genres = {
         "bollywood_melancholy": {
-            "root_freq": 220.0,   # A3 root (Minor chord, introspective)
-            "harmonics": [(1.0, 0.5), (1.20, 0.35), (1.50, 0.25)],  # Minor 3rd triad
+            "root_freq": 220.0,
+            "harmonics": [(1.0, 0.5), (1.20, 0.35), (1.50, 0.25)],
             "tempo_hz": 1.2,
             "filename": "bollywood_tum_hi_ho_style.wav",
             "duration": 6.0
         },
         "punjabi_upbeat": {
-            "root_freq": 261.63,  # C4 root (High energy, syncopated rhythm)
-            "harmonics": [(1.0, 0.6), (1.25, 0.3), (1.50, 0.2)],   # Major 3rd triad
+            "root_freq": 261.63,
+            "harmonics": [(1.0, 0.6), (1.25, 0.3), (1.50, 0.2)],
             "tempo_hz": 2.5,
             "filename": "punjabi_bhangra_groove.wav",
             "duration": 6.0
         },
         "indian_classical_raag": {
-            "root_freq": 146.83,  # D3 Tanpura drone + meditative Sitar overtone
+            "root_freq": 146.83,
             "harmonics": [(1.0, 0.4), (1.333, 0.3), (1.50, 0.25), (1.875, 0.15)],
             "tempo_hz": 0.8,
             "filename": "raag_yaman_meditation.wav",
             "duration": 6.0
         },
         "western_pop": {
-            "root_freq": 329.63,  # E4 Bright Pop hook
+            "root_freq": 329.63,
             "harmonics": [(1.0, 0.5), (1.25, 0.3), (1.50, 0.2)],
             "tempo_hz": 2.0,
             "filename": "western_pop_bright_chorus.wav",
@@ -174,16 +169,13 @@ def create_sample_diverse_dataset(output_dir: Path) -> List[Path]:
             f = config["root_freq"] * ratio
             wave += amp * np.sin(2 * np.pi * f * t)
 
-        # Apply rhythmic envelope
         envelope = 0.5 * (1 + np.sin(2 * np.pi * config["tempo_hz"] * t))
         wave = wave * (0.6 + 0.4 * envelope)
 
-        # Smooth fades at boundaries
         fade_len = int(0.05 * sr)
         wave[:fade_len] *= np.linspace(0, 1, fade_len)
         wave[-fade_len:] *= np.linspace(1, 0, fade_len)
 
-        # Normalize
         peak = np.max(np.abs(wave))
         if peak > 0:
             wave = (wave / peak) * PEAK_TARGET

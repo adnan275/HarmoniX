@@ -122,7 +122,6 @@ class HarmoniXOrchestrator:
 
         trajectory = []
         if total_samples < window_samples:
-            # Short track fallback: evaluate whole clip as one window
             return [{
                 "time_start_sec": 0.0,
                 "time_end_sec": round(total_samples / sr, 2),
@@ -137,7 +136,6 @@ class HarmoniXOrchestrator:
                 end = start + window_samples
                 chunk = waveform[start:end]
 
-                # Save temporary chunk to extract exact acoustic DSP features
                 sf.write(str(tmp_path), chunk, sr)
                 try:
                     feat_dict = extract_features(tmp_path)
@@ -170,14 +168,11 @@ class HarmoniXOrchestrator:
         Returns complete structured telemetry for the UI.
         """
         audio_file = Path(audio_file)
-        # 1. Normalize and sanitize audio
         waveform, sr, metadata = load_and_normalize(audio_file)
 
-        # 2. Extract full-track 34 acoustic features
         features_dict = extract_features(audio_file)
         X_full = np.array([[features_dict[col] for col in self.feature_cols]], dtype=float)
 
-        # 3. Model predictions across pipelines
         model_scores = {}
         for name, pipe in self.models.items():
             pred = float(np.clip(pipe.predict(X_full)[0], 0.0, 1.0))
@@ -185,15 +180,12 @@ class HarmoniXOrchestrator:
 
         primary_valence = model_scores["Random_Forest"]
 
-        # 4. Arousal estimation (based on RMS loudness & spectral energy)
-        # Calibrated against PMEmo mean 0.584 and std 0.14
         rms = features_dict.get("rms_mean", 0.10)
         centroid = features_dict.get("spectral_centroid_mean", 2200.0)
         estimated_arousal = float(np.clip(0.30 + (rms * 1.5) + (centroid / 10000.0), 0.15, 0.95))
 
         quadrant, emoji, mood_desc = get_emotional_quadrant(primary_valence, estimated_arousal)
 
-        # 5. Top Acoustic Indicators
         acoustic_highlights = {
             "Brightness (Spectral Centroid)": f"{features_dict.get('spectral_centroid_mean', 0):.1f} Hz",
             "Harmonic Purity (Spectral Flatness)": f"{features_dict.get('spectral_flatness_mean', 0):.4f}",
@@ -202,7 +194,6 @@ class HarmoniXOrchestrator:
             "RMS Energy (Loudness)": f"{features_dict.get('rms_mean', 0):.3f}"
         }
 
-        # 6. Dynamic Second-by-Second Trajectory
         if compute_trajectory:
             trajectory = self.compute_dynamic_trajectory(waveform, sr, window_seconds=3.0, hop_seconds=1.5)
         else:
@@ -223,7 +214,6 @@ class HarmoniXOrchestrator:
         }
 
 
-# Global singleton instance
 _orchestrator: Optional[HarmoniXOrchestrator] = None
 
 
