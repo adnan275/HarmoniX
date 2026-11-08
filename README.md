@@ -304,3 +304,93 @@ Run the evaluation module:
 ```bash
 python src/evaluate.py
 ```
+
+---
+
+## 🎼 Phase 2 — DSP, Spectrogram Engine & Dynamic Windowing
+
+The Phase 2 spectrogram pipeline is implemented in:
+
+- `src/spectrogram_engine.py` — Log-Mel spectrogram generation, CNN tensor conversion, and SpecAugment.
+- `src/dynamic_windowing.py` — Rolling audio segmentation and batch spectrogram generation.
+
+### 1. Log-Mel Spectrogram Engine
+
+The spectrogram engine converts normalized mono audio waveforms into fixed-size, 128-bin log-Mel spectrograms suitable for 2D CNN input.
+
+**Preprocessing configuration:**
+
+| Parameter | Configuration |
+|---|---|
+| Sample rate | 22,050 Hz |
+| Mel frequency bins | 128 |
+| FFT size (`n_fft`) | 2,048 |
+| Hop length | 512 samples |
+| Window length | 2,048 samples |
+| Window function | Hann |
+| Mel scale | Slaney |
+| Spectrogram type | Power spectrogram |
+| Log compression | `librosa.power_to_db` |
+| Dynamic range | 80 dB |
+| Centering | Disabled (`center=False`) |
+
+For a 3-second audio segment, the input contains 66,150 samples. The resulting log-Mel spectrogram has dimensions **(128, 126)**.
+
+A channel dimension is added for CNN compatibility, producing a tensor of shape:
+
+`[1, 128, 126]`
+
+For a batch of segments, the expected shape is:
+
+`[N, 1, 128, 126]`
+
+where `N` represents the number of audio windows.
+
+### 2. Dynamic Audio Windowing
+
+The dynamic windowing module divides audio into overlapping segments to preserve temporal information across longer recordings.
+
+**Windowing configuration:**
+
+- Window duration: 3 seconds.
+- Overlap: 50%.
+- Hop duration: 1.5 seconds.
+- Window length: 66,150 samples at 22,050 Hz.
+- Hop length: 33,075 samples.
+
+Short recordings are zero-padded to the required window length. Incomplete final windows are also zero-padded, ensuring that every segment produces a consistent spectrogram shape.
+
+The module converts the resulting windows into a stacked CNN tensor.
+
+**Output shape:** `(N, 1, 128, 126)`.
+
+### 3. SpecAugment — Training-Time Data Augmentation
+
+The spectrogram engine supports SpecAugment through frequency masking and time masking.
+
+- **Frequency masking:** Masks selected Mel-frequency bands.
+- **Time masking:** Masks selected time frames.
+
+Augmentation is applied only when training mode is enabled. Validation and test spectrograms remain unchanged to prevent evaluation contamination.
+
+### 4. Implementation Validation
+
+The modules were tested using the locally available synthetic audio samples.
+
+Validation checks included:
+
+- Correct sample-rate and waveform validation.
+- Consistent 3-second window generation.
+- Correct 50% overlap and final-window padding.
+- Expected log-Mel spectrogram dimensions `(128, 126)`.
+- Correct CNN tensor dimensions.
+- Finite spectrogram values.
+- SpecAugment changing training inputs while leaving validation/test inputs unchanged.
+
+**Dataset limitation:** The locally available sample audio is synthetic and intended for implementation testing. These checks establish that the preprocessing pipeline operates as expected, but do not establish performance on the complete official PMEmo dataset or validate instrument-specific acoustic behavior.
+
+### 5. Reproducibility
+
+The spectrogram configuration is centralized in `spectrogram_engine.py`. Training and inference should use the same sample rate, FFT configuration, Mel scale, window function, log-compression settings, and windowing policy to ensure consistent CNN inputs.
+
+Run the modules from the project root as part of the Phase 2 preprocessing pipeline.
