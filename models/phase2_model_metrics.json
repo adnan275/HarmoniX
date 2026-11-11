@@ -1,0 +1,263 @@
+{
+  "checkpoint_version": "2.0.0",
+  "target_names": [
+    "valence"
+  ],
+  "selected_features": [
+    "mfcc_1_mean",
+    "spectral_flatness_mean",
+    "zcr_mean",
+    "spectral_contrast_mean",
+    "spectral_centroid_mean",
+    "spectral_rolloff_mean",
+    "spectral_bandwidth_mean",
+    "sensory_dissonance_estimate"
+  ],
+  "device_info": {
+    "selected_device": "mps",
+    "reason": "Apple Silicon MPS backend available",
+    "torch_version": "2.11.0",
+    "mps_built": true,
+    "mps_available": true,
+    "cuda_available": false
+  },
+  "split_counts": {
+    "train": {
+      "n_songs": 42,
+      "n_windows": 126
+    },
+    "val": {
+      "n_songs": 9,
+      "n_windows": 27
+    },
+    "test": {
+      "n_songs": 9,
+      "n_windows": 27
+    }
+  },
+  "best_lambda_corr": 0.05,
+  "loss_stability_check": {
+    "all_passed": true,
+    "cases": {
+      "normal_batch_8": {
+        "total_loss": 0.003061,
+        "mse_loss": 0.0016,
+        "corr_loss": 0.014612,
+        "corr_valid": true,
+        "loss_finite": true,
+        "grad_finite": true,
+        "passed": true
+      },
+      "single_sample_b1": {
+        "total_loss": 0.0529,
+        "mse_loss": 0.0529,
+        "corr_loss": 0.0,
+        "corr_valid": false,
+        "loss_finite": true,
+        "grad_finite": true,
+        "passed": true
+      },
+      "small_batch_b2": {
+        "total_loss": 0.0025,
+        "mse_loss": 0.0025,
+        "corr_loss": 1e-06,
+        "corr_valid": true,
+        "loss_finite": true,
+        "grad_finite": true,
+        "passed": true
+      },
+      "constant_targets": {
+        "total_loss": 0.0475,
+        "mse_loss": 0.0475,
+        "corr_loss": 0.0,
+        "corr_valid": false,
+        "loss_finite": true,
+        "grad_finite": true,
+        "passed": true
+      },
+      "near_constant_targets": {
+        "total_loss": 0.0475,
+        "mse_loss": 0.0475,
+        "corr_loss": 0.0,
+        "corr_valid": false,
+        "loss_finite": true,
+        "grad_finite": true,
+        "passed": true
+      },
+      "constant_predictions": {
+        "total_loss": 0.175,
+        "mse_loss": 0.075,
+        "corr_loss": 1.0,
+        "corr_valid": true,
+        "loss_finite": true,
+        "grad_finite": true,
+        "passed": true
+      }
+    }
+  },
+  "models": {
+    "CNN_Only": {
+      "model_type": "cnn_only",
+      "lambda_corr": 0.05,
+      "best_epoch": 14,
+      "train_time_sec": 8.75,
+      "val_evaluation": {
+        "split": "val",
+        "n_songs": 9,
+        "n_windows": 27,
+        "window_loss": 0.005165,
+        "window_mse": 0.0037,
+        "primary_target": "valence",
+        "metrics": {
+          "MAE": 0.0538,
+          "RMSE": 0.0608,
+          "R2": 0.9418,
+          "Pearson_r": 0.9707,
+          "Spearman_rho": 0.7769
+        },
+        "per_target_metrics": {
+          "valence": {
+            "MAE": 0.0538,
+            "RMSE": 0.0608,
+            "R2": 0.9418,
+            "Pearson_r": 0.9707,
+            "Spearman_rho": 0.7769
+          }
+        }
+      },
+      "test_evaluation": {
+        "split": "test",
+        "n_songs": 9,
+        "n_windows": 27,
+        "window_loss": 0.004216,
+        "window_mse": 0.003145,
+        "primary_target": "valence",
+        "metrics": {
+          "MAE": 0.0486,
+          "RMSE": 0.0561,
+          "R2": 0.9498,
+          "Pearson_r": 0.9786,
+          "Spearman_rho": 0.7625
+        },
+        "per_target_metrics": {
+          "valence": {
+            "MAE": 0.0486,
+            "RMSE": 0.0561,
+            "R2": 0.9498,
+            "Pearson_r": 0.9786,
+            "Spearman_rho": 0.7625
+          }
+        }
+      }
+    },
+    "Hybrid_Fusion": {
+      "model_type": "hybrid_fusion",
+      "lambda_corr": 0.05,
+      "best_epoch": 6,
+      "train_time_sec": 6.19,
+      "val_evaluation": {
+        "split": "val",
+        "n_songs": 9,
+        "n_windows": 27,
+        "window_loss": 0.005785,
+        "window_mse": 0.004249,
+        "primary_target": "valence",
+        "metrics": {
+          "MAE": 0.0534,
+          "RMSE": 0.0645,
+          "R2": 0.9345,
+          "Pearson_r": 0.97,
+          "Spearman_rho": 0.7769
+        },
+        "per_target_metrics": {
+          "valence": {
+            "MAE": 0.0534,
+            "RMSE": 0.0645,
+            "R2": 0.9345,
+            "Pearson_r": 0.97,
+            "Spearman_rho": 0.7769
+          }
+        }
+      },
+      "test_evaluation": {
+        "split": "test",
+        "n_songs": 9,
+        "n_windows": 27,
+        "window_loss": 0.004084,
+        "window_mse": 0.003028,
+        "primary_target": "valence",
+        "metrics": {
+          "MAE": 0.0454,
+          "RMSE": 0.054,
+          "R2": 0.9535,
+          "Pearson_r": 0.9798,
+          "Spearman_rho": 0.9221
+        },
+        "per_target_metrics": {
+          "valence": {
+            "MAE": 0.0454,
+            "RMSE": 0.054,
+            "R2": 0.9535,
+            "Pearson_r": 0.9798,
+            "Spearman_rho": 0.9221
+          }
+        }
+      }
+    },
+    "Hybrid_Fusion_MSE_Baseline": {
+      "model_type": "hybrid_fusion",
+      "lambda_corr": 0.0,
+      "best_epoch": 13,
+      "train_time_sec": 18.11,
+      "val_evaluation": {
+        "split": "val",
+        "n_songs": 9,
+        "n_windows": 27,
+        "window_loss": 0.00425,
+        "window_mse": 0.00425,
+        "primary_target": "valence",
+        "metrics": {
+          "MAE": 0.0594,
+          "RMSE": 0.0646,
+          "R2": 0.9344,
+          "Pearson_r": 0.9703,
+          "Spearman_rho": 0.7769
+        },
+        "per_target_metrics": {
+          "valence": {
+            "MAE": 0.0594,
+            "RMSE": 0.0646,
+            "R2": 0.9344,
+            "Pearson_r": 0.9703,
+            "Spearman_rho": 0.7769
+          }
+        }
+      },
+      "test_evaluation": {
+        "split": "test",
+        "n_songs": 9,
+        "n_windows": 27,
+        "window_loss": 0.003947,
+        "window_mse": 0.003947,
+        "primary_target": "valence",
+        "metrics": {
+          "MAE": 0.0533,
+          "RMSE": 0.062,
+          "R2": 0.9386,
+          "Pearson_r": 0.9795,
+          "Spearman_rho": 0.9221
+        },
+        "per_target_metrics": {
+          "valence": {
+            "MAE": 0.0533,
+            "RMSE": 0.062,
+            "R2": 0.9386,
+            "Pearson_r": 0.9795,
+            "Spearman_rho": 0.9221
+          }
+        }
+      }
+    }
+  },
+  "best_validation_model": "CNN_Only"
+}

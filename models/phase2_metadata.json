@@ -1,0 +1,84 @@
+{
+  "checkpoint_version": "2.0.0",
+  "best_validation_model": "CNN_Only",
+  "checkpoints": {
+    "cnn_only": "models/cnn_only_best.pt",
+    "hybrid_fusion": "models/hybrid_fusion_best.pt",
+    "best_phase2": "models/best_phase2_model.pt"
+  },
+  "scaler_path": "models/phase2_acoustic_scaler.joblib",
+  "spectrogram_config": {
+    "sample_rate": 22050,
+    "n_mels": 128,
+    "n_fft": 2048,
+    "hop_length": 512,
+    "win_length": 2048,
+    "window": "hann",
+    "mel_scale": "slaney",
+    "fmin": 0.0,
+    "fmax": 11025.0,
+    "power": 2.0,
+    "top_db": 80.0,
+    "segment_seconds": 3.0,
+    "segment_samples": 66150,
+    "expected_frames": 126
+  },
+  "preprocessing_metadata": {
+    "acoustic_features": [
+      "mfcc_1_mean",
+      "spectral_flatness_mean",
+      "zcr_mean",
+      "spectral_contrast_mean",
+      "spectral_centroid_mean",
+      "spectral_rolloff_mean",
+      "spectral_bandwidth_mean",
+      "sensory_dissonance_estimate"
+    ],
+    "window_seconds": 3.0,
+    "hop_seconds": 1.5,
+    "imputer_strategy": "median",
+    "imputer_statistics": [
+      -445.5663757324219,
+      1.0193771231570281e-05,
+      0.021938852965831757,
+      19.082319259643555,
+      258.2442932128906,
+      314.5504150390625,
+      122.83367156982422,
+      0.03263869136571884
+    ],
+    "scaler_mean": [
+      -450.36741541302393,
+      0.10515461365816582,
+      0.023052896831243758,
+      19.82957885378883,
+      295.58434222993395,
+      367.3126736595517,
+      120.98052288237072,
+      0.03844346998939439
+    ],
+    "scaler_scale": [
+      10.21476393606386,
+      0.14869416865140506,
+      0.006223739138456443,
+      1.6149702677228166,
+      90.9330449957982,
+      117.65189897091598,
+      19.098222795734337,
+      0.01660329679781811
+    ],
+    "fitted_on": "train_split (126 windows)",
+    "use_specaugment_train_only": true,
+    "target_names": [
+      "valence"
+    ]
+  },
+  "device_info": {
+    "selected_device": "mps",
+    "reason": "Apple Silicon MPS backend available",
+    "torch_version": "2.11.0",
+    "mps_built": true,
+    "mps_available": true,
+    "cuda_available": false
+  }
+}

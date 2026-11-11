@@ -1,0 +1,5 @@
+model_type,lambda_corr,best_epoch,n_val_songs,n_val_windows,Val_MAE,Val_RMSE,Val_R2,Val_Pearson_r,Val_Spearman_rho,train_time_sec
+hybrid_fusion,0.05,6,9,27,0.0534,0.0645,0.9345,0.97,0.7769,6.19
+hybrid_fusion,0.0,13,9,27,0.0594,0.0646,0.9344,0.9703,0.7769,18.11
+hybrid_fusion,0.25,9,9,27,0.0538,0.0658,0.932,0.9705,0.7769,6.69
+hybrid_fusion,0.1,8,9,27,0.0569,0.0662,0.9312,0.9707,0.7769,6.35
