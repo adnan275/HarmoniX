@@ -5,6 +5,10 @@ Author: Adnan Rizvi (Lead Architect & Product Engineering Lead)
 Minimalist Studio Edition (No Emojis, Pure Dark Scientific Aesthetic)
 """
 
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 import sys
 import tempfile
 from pathlib import Path
@@ -390,16 +394,27 @@ with col_radar:
 with col_ensemble:
     st.markdown("""
     <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">
-        Model Ensemble Agreement
+        Model Consensus Benchmark
     </div>
     """, unsafe_allow_html=True)
 
     preds = results["model_predictions"]
-    df_models = pd.DataFrame([
-        {"Architecture": "Random Forest (Best)", "Valence": preds.get("Random_Forest", 0), "Color": "#10b981"},
-        {"Architecture": "XGBoost Regressor", "Valence": preds.get("XGBoost", 0), "Color": "#38bdf8"},
-        {"Architecture": "Ridge Baseline", "Valence": preds.get("Ridge", 0), "Color": "#64748b"}
-    ])
+    models_list = []
+    color_map = {}
+    for arch_name, score in preds.items():
+        clean_name = arch_name.replace(" (Phase 1 Baseline)", "").replace(" (Phase 2 Champion)", "").replace(" (Spectrogram Only)", "")
+        if "Hybrid" in arch_name:
+            c = "#38bdf8"
+        elif "CNN" in arch_name:
+            c = "#a855f7"
+        elif "Random" in arch_name:
+            c = "#10b981"
+        else:
+            c = "#64748b"
+        models_list.append({"Architecture": clean_name, "Valence": float(score)})
+        color_map[clean_name] = c
+
+    df_models = pd.DataFrame(models_list)
 
     fig_bar = px.bar(
         df_models,
@@ -407,11 +422,7 @@ with col_ensemble:
         y="Architecture",
         orientation="h",
         color="Architecture",
-        color_discrete_map={
-            "Random Forest (Best)": "#10b981",
-            "XGBoost Regressor": "#38bdf8",
-            "Ridge Baseline": "#64748b"
-        },
+        color_discrete_map=color_map,
         range_x=[0.0, 1.0],
         text_auto=".3f"
     )
@@ -427,6 +438,49 @@ with col_ensemble:
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
+st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+
+spec_info = results.get("spectrogram")
+if spec_info and "matrix" in spec_info:
+    st.markdown("""
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 2px;">
+        <span style="font-size: 14px; font-weight: 700; color: #ffffff;">2D Log-Mel Spectrogram (Acoustic Frequency Heatmap)</span>
+        <span style="font-size: 11px; color: #64748b; font-family:'JetBrains Mono';">128 Mel Bins • 22.05 kHz • Slaney Scale</span>
+    </div>
+    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+        Visual time-frequency representation feeding the PyTorch 2D-CNN feature extractor.
+    </div>
+    """, unsafe_allow_html=True)
+
+    matrix = np.array(spec_info["matrix"])
+    n_mels, n_frames = matrix.shape
+    dur = float(spec_info.get("duration_sec", 6.0))
+    time_axis = np.linspace(0.0, dur, n_frames)
+    mel_axis = np.linspace(0.0, 11025.0, n_mels)
+
+    fig_spec = go.Figure(data=go.Heatmap(
+        z=matrix,
+        x=time_axis,
+        y=mel_axis,
+        colorscale="Magma",
+        colorbar=dict(
+            title=dict(text="dB", font=dict(size=10, color="#94a3b8")),
+            tickfont=dict(size=9, color="#64748b"),
+            len=0.8,
+            thickness=10
+        )
+    ))
+    fig_spec.update_layout(
+        plot_bgcolor="#07090e",
+        paper_bgcolor="#090c12",
+        font=dict(color="#cbd5e1", family="Space Grotesk"),
+        xaxis=dict(title=dict(text="Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
+        yaxis=dict(title=dict(text="Frequency (Hz)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
+        margin=dict(l=40, r=20, t=10, b=40),
+        height=220
+    )
+    st.plotly_chart(fig_spec, use_container_width=True)
+
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
 st.markdown("""
@@ -441,6 +495,11 @@ st.markdown("""
 trajectory = results.get("trajectory", [])
 if trajectory and len(trajectory) > 1:
     df_traj = pd.DataFrame(trajectory)
+    min_v = float(df_traj["valence"].min())
+    max_v = float(df_traj["valence"].max())
+    diff = max_v - min_v
+    pad = 0.03 if diff < 0.05 else 0.08
+    y_range = [max(0.0, min_v - pad), min(1.0, max_v + pad)]
 
     fig_traj = go.Figure()
 
@@ -449,9 +508,10 @@ if trajectory and len(trajectory) > 1:
         y=df_traj["valence"],
         mode="lines+markers",
         line=dict(color="#38bdf8", width=3, shape="spline"),
-        marker=dict(size=7, color="#ffffff", line=dict(color="#38bdf8", width=2)),
+        marker=dict(size=8, color="#ffffff", line=dict(color="#38bdf8", width=2)),
         fill="tozeroy",
         fillcolor="rgba(56, 189, 248, 0.06)",
+        hovertemplate="Timestamp: %{x:.1f}s<br>Valence: %{y:.4f}<extra></extra>",
         name="Valence Track"
     ))
 
@@ -467,7 +527,7 @@ if trajectory and len(trajectory) > 1:
         plot_bgcolor="#07090e",
         paper_bgcolor="#090c12",
         font=dict(color="#cbd5e1", family="Space Grotesk"),
-        yaxis=dict(title=dict(text="Valence", font=dict(size=11, color="#64748b")), range=[0.0, 1.0], gridcolor="rgba(255,255,255,0.03)"),
+        yaxis=dict(title=dict(text="Valence", font=dict(size=11, color="#64748b")), range=y_range, gridcolor="rgba(255,255,255,0.03)"),
         xaxis=dict(title=dict(text="Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.03)"),
         height=270,
         margin=dict(l=40, r=40, t=15, b=40),
