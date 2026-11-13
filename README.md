@@ -133,33 +133,92 @@ All models were evaluated on the strictly untouched, held-out test split under i
 
 ---
 
-## 5. Technical Deep Dives
+## 5. Phase 2 Deep Learning Architecture & Training Pipeline
 
-### 5.1 Spectrogram Engine & Dynamic Windowing (`src/spectrogram_engine.py`, `src/dynamic_windowing.py`)
-- **Sampling & Windowing:** Audio is resampled to $22.05\,\text{kHz}$ mono. A rolling window of $3.0\,\text{seconds}$ ($66,150\,\text{samples}$) is extracted with a $1.5\,\text{second}$ hop ($50\%$ overlap).
-- **STFT & Mel Scale:** FFT size $N_{\text{fft}} = 2048$, Hann window of length $2048$, and hop length of $512$ samples. The Slaney Mel filterbank generates $128$ Mel bands ranging from $0\,\text{Hz}$ to $11,025\,\text{Hz}$.
-- **Log Compression:** Converted to a decibel scale using $10 \log_{10}(P / P_{\text{ref}})$ with an $80\,\text{dB}$ top-dB dynamic range clamp.
-- **SpecAugment:** Applies dynamic frequency masking and time masking strictly during training to prevent overfitting to specific harmonic lines.
+The Phase 2 deep learning pipeline (implemented in `src/models_cnn.py` and `src/train_cnn.py`) represents the core algorithmic advancement of HarmoniX, replacing static summary statistics with end-to-end representation learning.
 
-### 5.2 Deep Neural Architectures (`src/models_cnn.py`)
-- **SpectrogramCNNBackbone:**
-  - Block 1: `Conv2D(1, 32, 3x3)` $\rightarrow$ `BatchNorm2d` $\rightarrow$ `ReLU` $\rightarrow$ `MaxPool2d(2x2)` $\rightarrow$ `Dropout2d(0.10)`
-  - Block 2: `Conv2D(32, 64, 3x3)` $\rightarrow$ `BatchNorm2d` $\rightarrow$ `ReLU` $\rightarrow$ `MaxPool2d(2x2)` $\rightarrow$ `Dropout2d(0.15)`
-  - Block 3: `Conv2D(64, 128, 3x3)` $\rightarrow$ `BatchNorm2d` $\rightarrow$ `ReLU` $\rightarrow$ `MaxPool2d(2x2)` $\rightarrow$ `Dropout2d(0.20)`
-  - Block 4: `Conv2D(128, 128, 3x3)` $\rightarrow$ `BatchNorm2d` $\rightarrow$ `ReLU` $\rightarrow$ `MaxPool2d(2x2)` $\rightarrow$ `Dropout2d(0.25)`
-  - Dual Global Pooling: `AdaptiveAvgPool2d((1, 1))` and `AdaptiveMaxPool2d((1, 1))` are concatenated ($256$ dimensions) and projected to a $64$-dimensional normalized latent embedding with `LayerNorm` and `Dropout(0.25)`.
-- **Hybrid Fusion Head:**
-  - Concatenates the $64$-dim CNN embedding with the $8$ standardized acoustic physics features.
-  - Multi-layer perceptron: `Linear(72, 64)` $\rightarrow$ `ReLU` $\rightarrow$ `Dropout(0.25)` $\rightarrow$ `Linear(64, 32)` $\rightarrow$ `ReLU` $\rightarrow$ `Dropout(0.125)` $\rightarrow$ `Linear(32, 1)` $\rightarrow$ `Sigmoid`.
+### 5.1 2D-CNN Spectrogram Feature Extractor (`SpectrogramCNNBackbone`)
+The neural backbone processes normalized log-Mel spectrogram slices of shape $(B, 1, 128, 126)$ through four hierarchical convolutional blocks, designed to learn both local acoustic timbral textures and broader musical phrasing:
 
-### 5.3 Composite Pearson Correlation Loss
-Standard Mean Squared Error (MSE) optimizes mean predictions but can flatten variance across dynamic ranges. We employ a composite objective:
+```text
+Input Spectrogram Tensor: (B, 1, 128, 126)  [Normalized to [0.0, 1.0] from 80 dB dynamic range]
+│
+├── Conv Block 1: Conv2D(1, 32, 3x3, pad=1)   → BatchNorm2D → ReLU → MaxPool2D(2x2) → Dropout2D(0.10)
+│   Output: (B, 32, 64, 63)
+│
+├── Conv Block 2: Conv2D(32, 64, 3x3, pad=1)  → BatchNorm2D → ReLU → MaxPool2D(2x2) → Dropout2D(0.15)
+│   Output: (B, 64, 32, 31)
+│
+├── Conv Block 3: Conv2D(64, 128, 3x3, pad=1) → BatchNorm2D → ReLU → MaxPool2D(2x2) → Dropout2D(0.20)
+│   Output: (B, 128, 16, 15)
+│
+├── Conv Block 4: Conv2D(128, 128, 3x3, pad=1) → BatchNorm2D → ReLU → MaxPool2D(2x2) → Dropout2D(0.25)
+│   Output: (B, 128, 8, 7)  [Target layer for Grad-CAM explainability]
+│
+├── Dual Global Pooling:
+│   ├── AdaptiveAvgPool2d((1, 1)) → (B, 128)  [Captures distributed harmonic presence]
+│   └── AdaptiveMaxPool2d((1, 1)) → (B, 128)  [Captures sharp percussive transients]
+│   └── Concatenation → (B, 256)
+│
+└── Latent Embedding Head:
+    Linear(256, 64) → LayerNorm(64) → ReLU → Dropout(0.25)
+    Output: Normalized Latent Representation (B, 64)
+```
+
+### 5.2 Multimodal Late Fusion Architecture (`HybridFusionRegressor`)
+While the 2D-CNN discovers spatial acoustic patterns, physics-grounded mathematical features provide explicit invariant constraints. The multimodal fusion network synthesizes both modalities:
+
+1. **Acoustic Physics Vector ($8$-dim):** Extracted per 3-second window using identical DSP logic to runtime inference:
+   - `mfcc_1_mean`: Overall spectral envelope and acoustic energy.
+   - `spectral_flatness_mean`: Tonal consonance vs. noise entropy.
+   - `zcr_mean`: Zero-crossing rate (transient frequency indicator).
+   - `spectral_contrast_mean`: Peak-to-valley harmonic energy contrast.
+   - `spectral_centroid_mean`: Perceived psychoacoustic brightness / warmth.
+   - `spectral_rolloff_mean`: Upper frequency boundary of acoustic energy.
+   - `spectral_bandwidth_mean`: Spectral width around centroid.
+   - `sensory_dissonance_estimate`: Plomp-Levelt psychoacoustic roughness.
+2. **LayerNorm Feature Balancing:** The $64$-dim CNN embedding is passed through a dedicated `LayerNorm` layer before concatenation, preventing high-dimensional neural representations from overwhelming the $8$-dim scaled acoustic descriptors.
+3. **Multimodal Fusion MLP Head:**
+   ```text
+   Concatenated Multimodal Vector: (B, 64 + 8) = (B, 72)
+   │
+   ├── Dense Layer 1: Linear(72, 64) → ReLU → Dropout(0.25)
+   ├── Dense Layer 2: Linear(64, 32) → ReLU → Dropout(0.125)
+   ├── Projection:    Linear(32, 1)
+   └── Activation:    Sigmoid() → Predicted Valence ∈ [0.0, 1.0]
+   ```
+
+### 5.3 Pearson Correlation Regularized Objective (`CompositeValenceLoss`)
+Standard regression models trained solely on Mean Squared Error (MSE) suffer from "regression to the mean," underestimating emotional peaks and flattening dynamic variance. To guarantee that the model learns the relative emotional rank of songs, we engineered a differentiable composite objective:
+
 $$\mathcal{L}_{\text{total}} = \text{MSE}(y, \hat{y}) + \lambda \cdot (1 - r(y, \hat{y}))$$
-where $r(y, \hat{y})$ is the batch Pearson correlation coefficient:
-$$r = \frac{\sum (y_i - \bar{y})(\hat{y}_i - \bar{\hat{y}})}{\sqrt{\sum (y_i - \bar{y})^2 \sum (\hat{y}_i - \bar{\hat{y}})^2 + \epsilon}}$$
-Tuned via validation sweep to $\lambda = 0.05$.
 
-### 5.4 Explainable AI (XAI) Suite (`src/deep_explainability.py`)
+Where the differentiable batch Pearson correlation coefficient $r(y, \hat{y})$ is defined as:
+$$r(y, \hat{y}) = \frac{\sum_{i=1}^B (y_i - \bar{y})(\hat{y}_i - \bar{\hat{y}})}{\sqrt{\sum_{i=1}^B (y_i - \bar{y})^2 + \epsilon} \cdot \sqrt{\sum_{i=1}^B (\hat{y}_i - \bar{\hat{y}})^2 + \epsilon}}$$
+
+- A numerical stability clamp ($\epsilon = 10^{-8}$) guarantees gradient stability even on small or constant batches.
+- When $\lambda = 0.05$, the gradient strongly penalizes ranking inversions while maintaining accurate point calibration.
+
+### 5.4 Training Protocols & Zero-Leakage Safeguards
+- **Hardware Acceleration:** Automatic hardware dispatch prioritizing Apple Silicon Metal Performance Shaders (`mps`), CUDA (`cuda`), with CPU fallback (`get_device()`).
+- **Optimization:** AdamW optimizer with initial learning rate $\eta = 1\times 10^{-3}$, weight decay $1\times 10^{-4}$, and mini-batch size of $16$.
+- **Learning Rate Decay & Early Stopping:** Validation-loss monitored early stopping with a patience of $12$ epochs over a maximum of $40$ epochs.
+- **SpecAugment Regularization:** During training, dynamic frequency masking (up to 16 Mel bins) and time masking (up to 16 frames) are injected into the spectrograms. Augmentations are deactivated during validation and test evaluation.
+- **Zero Data Leakage:** Windowing, median imputation, and `StandardScaler` transformations for the acoustic descriptors are strictly fitted on the training split only.
+
+### 5.5 Controlled Deep Learning Ablation Experiments
+
+| Model Variant | Loss Objective | Best Epoch | Val $R^2$ | Val Pearson $r$ | Test $R^2$ | Test Pearson $r$ | Test Spearman $\rho$ | Test MAE | Test RMSE |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Hybrid Fusion (Champion)** | $\text{MSE} + 0.05(1-r)$ | 6 | 0.9345 | 0.9700 | **0.9535** | **0.9798** | **0.9221** | **0.0454** | **0.0540** |
+| **CNN-Only Regressor** | $\text{MSE} + 0.05(1-r)$ | 14 | **0.9418** | **0.9707** | 0.9498 | 0.9786 | 0.7625 | 0.0486 | 0.0561 |
+| **Hybrid Fusion Baseline** | Pure MSE ($\lambda = 0$) | 13 | 0.9344 | 0.9703 | 0.9386 | 0.9795 | 0.9221 | 0.0533 | 0.0620 |
+
+**Takeaway:** Adding the Pearson loss term improved test $R^2$ by $+1.49\%$, and combining 2D-CNN with physics features elevated ordinal ranking correlation (Spearman $\rho$) from $0.7625$ to $0.9221$.
+
+---
+
+## 6. Phase 2 Explainable AI (XAI) Suite (`src/deep_explainability.py`)
 - **Signed Pre-Sigmoid Grad-CAM:** Hooks into Block 4 conv layer prior to non-linear saturation. Produces signed attribution heatmaps isolating time-frequency regions that elevate perceived valence (uplifting/major acoustic markers) versus regions that depress valence (somber/tense markers).
 - **Integrated Gradients:** Evaluated with a zero-energy silence baseline over $256$ integration steps with verified completeness checks ($\sum \text{Attributions} = f(x) - f(\text{baseline})$).
 - **Exact Tabular Shapley Values:** Computes exact Shapley attribution over all $2^8 = 256$ feature coalitions for the acoustic branch, isolating the relative contribution of timbre vs. sensory roughness.
@@ -169,7 +228,7 @@ Tuned via validation sweep to $\lambda = 0.05$.
 
 ---
 
-## 6. HarmoniX Audio Studio Web Application
+## 7. HarmoniX Audio Studio Web Application
 
 The project includes an interactive web laboratory running in Streamlit, styled with an instrument-grade dark HUD aesthetic.
 
@@ -189,7 +248,7 @@ The project includes an interactive web laboratory running in Streamlit, styled 
 
 ---
 
-## 7. Repository Layout
+## 8. Repository Layout
 
 ```text
 AIML_project/
@@ -233,7 +292,7 @@ AIML_project/
 
 ---
 
-## 8. Quickstart & Reproduction Guide
+## 9. Quickstart & Reproduction Guide
 
 ### Step 1: Clone Repository & Setup Environment
 ```bash
@@ -273,7 +332,7 @@ Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ---
 
-## 9. Citation & Acknowledgments
+## 10. Citation & Acknowledgments
 - **Dataset:** PMEmo Dataset (*Hui Zhang, Xinxing Li et al.*)
 - **Theoretical Foundations:** Russell's Circumplex Model of Affect (1980), Plomp-Levelt Consonance Theory (1965).
 - **Institution:** Computer Science & Artificial Intelligence (CSAI), HarmoniX Research Group.
