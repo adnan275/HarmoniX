@@ -36,23 +36,23 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
     /* Global Pitch Black Canvas */
     .stApp {
         background-color: #000000 !important;
-        background-image: 
-            radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.05) 0%, transparent 55%),
-            radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.04) 0%, transparent 45%);
-        color: #f1f5f9 !important;
-        font-family: 'Space Grotesk', -apple-system, sans-serif !important;
+        background-image:
+            radial-gradient(ellipse 80% 50% at 50% -5%, rgba(0, 229, 255, 0.06) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 40% at 95% 95%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+        color: #e2e8f0 !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
 
     /* Container Spacing */
     .block-container {
-        padding-top: 1.4rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 2rem !important;
-        max-width: 1260px !important;
+        max-width: 1280px !important;
     }
 
     /* Hide Streamlit Header */
@@ -61,24 +61,24 @@ st.markdown("""
         height: 0 !important;
     }
 
-    /* Sidebar - Ultra Clean Matte */
+    /* Sidebar */
     [data-testid="stSidebar"] {
-        background: #050608 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+        background: #030405 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
     }
 
     /* Equalizer Bar Animation */
     .eq-container {
         display: inline-flex;
         align-items: flex-end;
-        gap: 3px;
-        height: 16px;
-        margin-left: 8px;
+        gap: 2.5px;
+        height: 18px;
+        margin-left: 10px;
     }
     .eq-bar {
         width: 3px;
-        background: #00e5ff;
-        border-radius: 2px;
+        background: linear-gradient(to top, #00e5ff, #00b8d4);
+        border-radius: 1.5px;
         animation: eqPulse 1.2s ease-in-out infinite alternate;
     }
     .eq-bar:nth-child(1) { height: 30%; animation-delay: 0.1s; }
@@ -99,38 +99,53 @@ st.markdown("""
         background: #00e5ff;
         border-radius: 50%;
         display: inline-block;
-        box-shadow: 0 0 10px #00e5ff, 0 0 20px rgba(0, 229, 255, 0.6);
-        animation: pulseGlow 1.8s infinite;
+        box-shadow: 0 0 8px #00e5ff, 0 0 16px rgba(0, 229, 255, 0.5);
+        animation: pulseGlow 2s ease-in-out infinite;
     }
     @keyframes pulseGlow {
         0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.25); opacity: 0.75; }
+        50% { transform: scale(1.3); opacity: 0.7; }
     }
 
     /* Studio Metric Card */
     .metric-card {
-        background: #06070a;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 14px 16px;
-        min-height: 195px;
+        background: #060709;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 16px 18px;
+        min-height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.3) 50%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
     .metric-card:hover {
-        border-color: rgba(255, 255, 255, 0.18);
-        transform: translateY(-2px);
-        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8), 0 0 22px rgba(0, 229, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.12);
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 229, 255, 0.04);
+    }
+    .metric-card:hover::before {
+        opacity: 1;
     }
     .card-label {
-        font-size: 10.5px;
+        font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: #64748b;
+        letter-spacing: 0.12em;
+        color: #475569;
         margin-bottom: 2px;
     }
     .card-number {
@@ -146,65 +161,66 @@ st.markdown("""
     .badge-quad {
         display: inline-flex;
         align-items: center;
-        padding: 5px 13px;
-        border-radius: 8px;
+        padding: 6px 16px;
+        border-radius: 10px;
         font-size: 13px;
         font-weight: 700;
         letter-spacing: 0.02em;
     }
     .badge-joyful {
-        background: rgba(0, 230, 153, 0.12);
+        background: rgba(0, 230, 153, 0.1);
         color: #00e699;
-        border: 1px solid rgba(0, 230, 153, 0.4);
-        box-shadow: 0 0 16px rgba(0, 230, 153, 0.2);
+        border: 1px solid rgba(0, 230, 153, 0.3);
+        box-shadow: 0 0 20px rgba(0, 230, 153, 0.15), inset 0 0 12px rgba(0, 230, 153, 0.05);
     }
     .badge-tense {
-        background: rgba(255, 51, 102, 0.12);
+        background: rgba(255, 51, 102, 0.1);
         color: #ff3366;
-        border: 1px solid rgba(255, 51, 102, 0.4);
-        box-shadow: 0 0 16px rgba(255, 51, 102, 0.2);
+        border: 1px solid rgba(255, 51, 102, 0.3);
+        box-shadow: 0 0 20px rgba(255, 51, 102, 0.15), inset 0 0 12px rgba(255, 51, 102, 0.05);
     }
     .badge-melancholic {
-        background: rgba(168, 85, 247, 0.12);
+        background: rgba(168, 85, 247, 0.1);
         color: #c084fc;
-        border: 1px solid rgba(192, 132, 252, 0.4);
-        box-shadow: 0 0 16px rgba(192, 132, 252, 0.2);
+        border: 1px solid rgba(192, 132, 252, 0.3);
+        box-shadow: 0 0 20px rgba(192, 132, 252, 0.15), inset 0 0 12px rgba(192, 132, 252, 0.05);
     }
     .badge-calm {
-        background: rgba(0, 229, 255, 0.12);
+        background: rgba(0, 229, 255, 0.1);
         color: #00e5ff;
-        border: 1px solid rgba(0, 229, 255, 0.4);
-        box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), inset 0 0 12px rgba(0, 229, 255, 0.05);
     }
 
-    /* Audio Element Inversion */
+    /* Audio Element */
     audio {
         width: 100% !important;
         border-radius: 8px;
-        filter: invert(0.92) hue-rotate(180deg);
-        opacity: 0.95;
+        filter: invert(0.88) hue-rotate(180deg);
+        opacity: 0.9;
+        margin-top: 4px;
     }
 
     /* Glassmorphic Panels */
     .studio-panel {
-        background: #06070a;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 14px;
-        padding: 18px 22px;
+        background: #060709;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 20px 24px;
         margin-bottom: 14px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
-        transition: border-color 0.25s ease;
+        transition: border-color 0.3s ease;
+        position: relative;
     }
     .studio-panel:hover {
-        border-color: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.12);
     }
     .panel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
     .panel-title {
         font-size: 14px;
@@ -213,9 +229,9 @@ st.markdown("""
         letter-spacing: -0.01em;
     }
     .panel-subtitle {
-        font-size: 11.5px;
-        color: #64748b;
-        margin-top: 2px;
+        font-size: 11px;
+        color: #475569;
+        margin-top: 3px;
     }
     .card-subtext {
         font-size: 11.5px;
@@ -239,71 +255,83 @@ st.markdown("""
         display: inline-flex;
         align-items: center;
         background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
         padding: 3px 10px;
-        font-size: 10.5px;
-        color: #94a3b8;
+        font-size: 10px;
+        color: #64748b;
         font-family: 'JetBrains Mono', monospace;
+        font-weight: 500;
     }
 
-    /* Streamlit Tabs Customization */
+    /* Streamlit Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
+        gap: 4px;
         background-color: transparent;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        padding-bottom: 2px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        padding-bottom: 0px;
     }
     .stTabs [data-baseweb="tab"] {
         height: 34px;
-        background-color: rgba(255, 255, 255, 0.02);
-        border-radius: 6px 6px 0px 0px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: transparent;
+        border-radius: 8px 8px 0px 0px;
+        border: 1px solid transparent;
         border-bottom: none;
-        color: #94a3b8;
-        font-size: 11.5px;
+        color: #64748b;
+        font-size: 11px;
         font-weight: 600;
         padding: 6px 14px;
         transition: all 0.2s ease;
     }
     .stTabs [data-baseweb="tab"]:hover {
-        color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        background-color: rgba(255, 255, 255, 0.03);
     }
     .stTabs [aria-selected="true"] {
-        background-color: rgba(56, 189, 248, 0.08) !important;
-        color: #38bdf8 !important;
-        border-color: rgba(56, 189, 248, 0.35) !important;
-        border-bottom: 2px solid #38bdf8 !important;
+        background-color: rgba(0, 229, 255, 0.06) !important;
+        color: #00e5ff !important;
+        border-color: rgba(0, 229, 255, 0.2) !important;
+        border-bottom: 2px solid #00e5ff !important;
     }
 
     /* Sidebar Form Polish */
     [data-testid="stSidebar"] div[data-baseweb="select"] > div {
-        background-color: #0b0d14 !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 8px !important;
-        color: #f1f5f9 !important;
+        background-color: #08090d !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
         font-size: 12px !important;
     }
     [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
         font-size: 12px;
+        color: #94a3b8;
     }
     .streamlit-expanderHeader {
-        background: rgba(15, 18, 28, 0.5) !important;
+        background: #060709 !important;
         border: 1px solid rgba(255, 255, 255, 0.06) !important;
-        border-radius: 8px !important;
-        color: #cbd5e1 !important;
+        border-radius: 10px !important;
+        color: #94a3b8 !important;
         font-size: 12.5px !important;
         font-weight: 600 !important;
     }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+
+    /* Dataframe */
+    .stDataFrame { border-radius: 10px !important; overflow: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
 
 st.sidebar.markdown("""
-<div style="padding: 12px 0 18px 0;">
-    <div style="font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #38bdf8; text-transform: uppercase;">Acoustic Laboratory</div>
-    <div style="font-size: 18px; font-weight: 700; color: #ffffff; margin-top: 2px;">Audio Ingestion</div>
+<div style="padding: 16px 0 20px 0;">
+    <div style="font-size: 9px; font-weight: 700; letter-spacing: 2px; color: #475569; text-transform: uppercase;">Acoustic Laboratory</div>
+    <div style="font-size: 19px; font-weight: 800; color: #ffffff; margin-top: 4px; letter-spacing: -0.02em;">Audio Ingestion</div>
+    <div style="height: 2px; width: 28px; background: linear-gradient(90deg, #00e5ff, transparent); margin-top: 8px; border-radius: 1px;"></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -351,13 +379,13 @@ col_title, col_status = st.columns([2, 1])
 with col_title:
     st.markdown("""
     <div style="display:flex; align-items:center; gap:12px;">
-        <span style="font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color:#ffffff;">HarmoniX Audio Studio</span>
+        <span style="font-size: 28px; font-weight: 800; letter-spacing: -0.04em; color:#ffffff; font-family: 'Inter', sans-serif;">HarmoniX Audio Studio</span>
         <div class="eq-container">
             <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
         </div>
     </div>
-    <div style="font-size: 12.5px; color: #64748b; margin-top: 4px;">Multimodal Music Emotion Perception & 2D Spectrogram Neural Intelligence</div>
-    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top: 8px;">
+    <div style="font-size: 12px; color: #475569; margin-top: 5px; font-weight: 500;">Multimodal Music Emotion Perception & 2D Spectrogram Neural Intelligence</div>
+    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top: 10px;">
         <span class="chip">Phase 2 Champion Hybrid Fusion</span>
         <span class="chip">128 Mel Bins (Slaney)</span>
         <span class="chip">22.05 kHz DSP</span>
@@ -367,10 +395,10 @@ with col_title:
 
 with col_status:
     st.markdown("""
-    <div style="text-align: right; padding-top: 4px;">
-        <div style="display:inline-flex; align-items:center; gap:6px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 20px; padding: 5px 14px;">
-            <span style="width: 7px; height: 7px; background: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8; display:inline-block;"></span>
-            <span style="color: #38bdf8; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">ENGINE ACTIVE</span>
+    <div style="text-align: right; padding-top: 6px;">
+        <div style="display:inline-flex; align-items:center; gap:7px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.18); border-radius: 24px; padding: 6px 16px;">
+            <span style="width: 7px; height: 7px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 8px #00e5ff, 0 0 16px rgba(0,229,255,0.4); display:inline-block;"></span>
+            <span style="color: #00e5ff; font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; font-family: 'JetBrains Mono', monospace;">ENGINE ACTIVE</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -393,34 +421,35 @@ with st.container():
     meta = results["metadata"]
 
     st.markdown(f"""
-    <div style="background: linear-gradient(165deg, rgba(14, 18, 28, 0.95) 0%, rgba(8, 10, 16, 0.98) 100%); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 14px; padding: 16px 20px 14px 20px; margin-bottom: 14px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
-            <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="background: #060709; border: 1px solid rgba(0, 229, 255, 0.15); border-radius: 16px; padding: 18px 22px 14px 22px; margin-bottom: 14px; position: relative; overflow: hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; height:1px; background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.3), transparent);"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+            <div style="display: flex; align-items: center; gap: 14px;">
                 <span class="pulse-dot"></span>
                 <div>
-                    <div style="font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">{audio_label}</div>
-                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 3px;">
-                        <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 4px; padding: 1px 7px; font-size: 10px; font-weight: 700; text-transform: uppercase;">{genre_badge}</span>
-                        <span style="font-size: 11px; color: #64748b; font-family: 'JetBrains Mono';">Slaney DSP • 22.05 kHz Ingestion</span>
+                    <div style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.03em; font-family: 'Inter', sans-serif;">{audio_label}</div>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                        <span style="background: rgba(0, 229, 255, 0.1); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 6px; padding: 2px 9px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">{genre_badge}</span>
+                        <span style="font-size: 11px; color: #475569; font-family: 'JetBrains Mono';">Slaney DSP  //  22.05 kHz Ingestion</span>
                     </div>
                 </div>
             </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
-                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Duration</div>
-                    <div style="font-size: 12.5px; font-weight: 700; color: #f1f5f9; font-family: 'JetBrains Mono';">{meta['duration_seconds']:.1f}s</div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 5px 12px; text-align: center; min-width: 60px;">
+                    <div style="font-size: 8.5px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Duration</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #e2e8f0; font-family: 'JetBrains Mono'; margin-top: 1px;">{meta['duration_seconds']:.1f}s</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
-                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Sample Rate</div>
-                    <div style="font-size: 12.5px; font-weight: 700; color: #00e5ff; font-family: 'JetBrains Mono';">{meta['target_sample_rate']} Hz</div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 5px 12px; text-align: center; min-width: 60px;">
+                    <div style="font-size: 8.5px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Sample Rate</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #00e5ff; font-family: 'JetBrains Mono'; margin-top: 1px;">{meta['target_sample_rate']} Hz</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
-                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Signal</div>
-                    <div style="font-size: 12.5px; font-weight: 700; color: #cbd5e1; font-family: 'JetBrains Mono';">Mono Downmix</div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 5px 12px; text-align: center; min-width: 60px;">
+                    <div style="font-size: 8.5px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Signal</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #94a3b8; font-family: 'JetBrains Mono'; margin-top: 1px;">Mono Downmix</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
-                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Peak Level</div>
-                    <div style="font-size: 12.5px; font-weight: 700; color: #00e699; font-family: 'JetBrains Mono';">{meta['normalized_peak']:.2f} pk</div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 5px 12px; text-align: center; min-width: 60px;">
+                    <div style="font-size: 8.5px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Peak Level</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #00e699; font-family: 'JetBrains Mono'; margin-top: 1px;">{meta['normalized_peak']:.2f} pk</div>
                 </div>
             </div>
         </div>
@@ -459,15 +488,48 @@ def render_gauge_svg(val, min_v, max_v, col, grad_id, c1, c2, center_label, subt
                 <feDropShadow dx="0" dy="0" stdDeviation="3.5" flood-color="{col}" flood-opacity="0.85"/>
             </filter>
         </defs>
-        <path d="M 42 88 A 58 58 0 0 1 158 88" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8" stroke-linecap="round"/>
+        <path d="M 42 88 A 58 58 0 0 1 158 88" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8" stroke-linecap="round"/>
         <path d="M 42 88 A 58 58 0 0 1 158 88" fill="none" stroke="url(#{grad_id})" stroke-width="8" stroke-linecap="round"
               stroke-dasharray="{total_len:.2f}" stroke-dashoffset="{offset:.2f}" filter="url(#glow-{grad_id})"/>
         <circle cx="{nx:.1f}" cy="{ny:.1f}" r="4.5" fill="#ffffff" stroke="{col}" stroke-width="2" filter="drop-shadow(0 0 6px {col})"/>
         <text x="100" y="74" text-anchor="middle" font-size="25" font-weight="800" font-family="'JetBrains Mono', monospace" fill="#ffffff" filter="drop-shadow(0 0 8px {col}88)">{center_label}</text>
-        <text x="100" y="90" text-anchor="middle" font-size="10" font-weight="600" font-family="'Space Grotesk', sans-serif" fill="#94a3b8">{subtext}</text>
-        <text x="42" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#64748b">{t_left}</text>
-        <text x="100" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#64748b">{t_mid}</text>
-        <text x="158" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#64748b">{t_right}</text>
+        <text x="100" y="90" text-anchor="middle" font-size="10" font-weight="600" font-family="'Inter', sans-serif" fill="#64748b">{subtext}</text>
+        <text x="42" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#475569">{t_left}</text>
+        <text x="100" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#475569">{t_mid}</text>
+        <text x="158" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#475569">{t_right}</text>
+    </svg>
+    """
+
+def render_circumplex_svg(v, a, quad_str, quad_title):
+    bx = max(68.0, min(132.0, 100.0 + (v - 0.5) * 60.0))
+    by = max(18.0, min(78.0, 48.0 - (a - 0.5) * 60.0))
+    q_col = "#00e699" if "Q1" in quad_str else "#ff3366" if "Q2" in quad_str else "#c084fc" if "Q3" in quad_str else "#00e5ff"
+    
+    if "Q1" in quad_str:
+        q_rect = '<rect x="100" y="14" width="34" height="34" fill="rgba(0, 230, 153, 0.12)" rx="3"/>'
+    elif "Q2" in quad_str:
+        q_rect = '<rect x="66" y="14" width="34" height="34" fill="rgba(255, 51, 102, 0.12)" rx="3"/>'
+    elif "Q3" in quad_str:
+        q_rect = '<rect x="66" y="48" width="34" height="34" fill="rgba(192, 132, 252, 0.12)" rx="3"/>'
+    else:
+        q_rect = '<rect x="100" y="48" width="34" height="34" fill="rgba(0, 229, 255, 0.12)" rx="3"/>'
+
+    return f"""
+    <svg viewBox="0 0 200 108" style="width:100%; height:auto; display:block; margin: 4px auto 0 auto;">
+        <defs>
+            <filter id="scope-glow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="{q_col}" flood-opacity="0.8"/>
+            </filter>
+        </defs>
+        {q_rect}
+        <circle cx="100" cy="48" r="34" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="2,2"/>
+        <circle cx="100" cy="48" r="18" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <line x1="66" y1="48" x2="134" y2="48" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <line x1="100" y1="14" x2="100" y2="82" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <circle cx="{bx:.1f}" cy="{by:.1f}" r="7" fill="none" stroke="{q_col}" stroke-width="1" stroke-dasharray="2,2"/>
+        <polygon points="{bx:.1f},{by-4:.1f} {bx+4:.1f},{by:.1f} {bx:.1f},{by+4:.1f} {bx-4:.1f},{by:.1f}" fill="#ffffff" stroke="{q_col}" stroke-width="2" filter="url(#scope-glow)"/>
+        <text x="100" y="93" text-anchor="middle" font-size="12.5" font-weight="800" font-family="'Inter', sans-serif" fill="{q_col}">{quad_title}</text>
+        <text x="100" y="105" text-anchor="middle" font-size="9" font-weight="600" font-family="'JetBrains Mono', monospace" fill="#64748b">V: {v:.3f} • A: {a:.3f}</text>
     </svg>
     """
 
@@ -508,27 +570,14 @@ with m2:
 with m3:
     quad_name = quadrant.split(':')[1].strip() if ':' in quadrant else quadrant
     quad_key = quadrant.split(':')[0].strip()
+    svg_c = render_circumplex_svg(v_score, a_score, quadrant, quad_name)
     st.markdown(f"""
     <div class="metric-card" style="border-top: 2px solid #c084fc;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="card-label">Emotional Space</span>
             <span style="font-size:9.5px; font-weight:700; color:#c084fc; background:rgba(192,132,252,0.14); border:1px solid rgba(192,132,252,0.35); padding:2px 7px; border-radius:4px; font-family:'JetBrains Mono';">{quad_key}</span>
         </div>
-        <div style="text-align:center; padding: 10px 0;">
-            <div class="badge-quad {badge_class}" style="font-size: 14px; font-weight: 700; padding: 6px 14px; border-radius: 8px; margin-bottom: 6px;">{quad_name}</div>
-            <div style="font-size: 11px; color: #ffffff; text-shadow: 0 0 10px rgba(168,85,247,0.7); font-family: 'JetBrains Mono'; font-weight: 700; margin: 4px 0;">
-                Coord [V: {v_score:.3f} • A: {a_score:.3f}]
-            </div>
-            <div style="font-size: 10.5px; color: #94a3b8; line-height: 1.35; max-height: 2.8em; overflow:hidden; text-overflow:ellipsis;">
-                {results["mood_description"]}
-            </div>
-        </div>
-        <div style="display:flex; gap:3px;">
-            <div style="flex:1; height:4px; border-radius:2px; background:{'#00e699' if 'Q1' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #00e699' if 'Q1' in quadrant else 'none'};"></div>
-            <div style="flex:1; height:4px; border-radius:2px; background:{'#ff3366' if 'Q2' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #ff3366' if 'Q2' in quadrant else 'none'};"></div>
-            <div style="flex:1; height:4px; border-radius:2px; background:{'#c084fc' if 'Q3' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #c084fc' if 'Q3' in quadrant else 'none'};"></div>
-            <div style="flex:1; height:4px; border-radius:2px; background:{'#00e5ff' if 'Q4' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #00e5ff' if 'Q4' in quadrant else 'none'};"></div>
-        </div>
+        {svg_c}
     </div>
     """, unsafe_allow_html=True)
 
@@ -588,10 +637,10 @@ with col_radar:
     fig_compass.add_vline(x=0.5, line_dash="solid", line_color="rgba(255, 255, 255, 0.14)", line_width=1)
     fig_compass.add_shape(type="circle", x0=0.490, y0=0.490, x1=0.510, y1=0.510, fillcolor="#00e5ff", line_color="#ffffff", line_width=1)
 
-    fig_compass.add_annotation(x=0.82, y=0.93, text="Q1 // JOYFUL (EUPHORIC)", showarrow=False, font=dict(color="#00e699", size=9.5, family="Space Grotesk"))
-    fig_compass.add_annotation(x=0.18, y=0.93, text="Q2 // TENSE (DRAMATIC)", showarrow=False, font=dict(color="#ff3366", size=9.5, family="Space Grotesk"))
-    fig_compass.add_annotation(x=0.18, y=0.07, text="Q3 // MELANCHOLIC (SOMBER)", showarrow=False, font=dict(color="#c084fc", size=9.5, family="Space Grotesk"))
-    fig_compass.add_annotation(x=0.82, y=0.07, text="Q4 // CALM (SERENE)", showarrow=False, font=dict(color="#00e5ff", size=9.5, family="Space Grotesk"))
+    fig_compass.add_annotation(x=0.82, y=0.93, text="Q1 // JOYFUL (EUPHORIC)", showarrow=False, font=dict(color="#00e699", size=9.5, family="Inter, sans-serif"))
+    fig_compass.add_annotation(x=0.18, y=0.93, text="Q2 // TENSE (DRAMATIC)", showarrow=False, font=dict(color="#ff3366", size=9.5, family="Inter, sans-serif"))
+    fig_compass.add_annotation(x=0.18, y=0.07, text="Q3 // MELANCHOLIC (SOMBER)", showarrow=False, font=dict(color="#c084fc", size=9.5, family="Inter, sans-serif"))
+    fig_compass.add_annotation(x=0.82, y=0.07, text="Q4 // CALM (SERENE)", showarrow=False, font=dict(color="#00e5ff", size=9.5, family="Inter, sans-serif"))
 
     # Dynamic text position to prevent clipping at plot boundaries
     if v_score >= 0.65:
@@ -615,7 +664,7 @@ with col_radar:
         marker=dict(size=14, color="#00e5ff", line=dict(color="#ffffff", width=2.5), symbol="diamond"),
         text=[f"Current Track ({v_score:.2f}, {a_score:.2f})"],
         textposition=track_textpos,
-        textfont=dict(color="#ffffff", size=11, family="Space Grotesk"),
+        textfont=dict(color="#ffffff", size=11, family="Inter, sans-serif"),
         cliponaxis=False,
         name="Track Location"
     ))
@@ -681,7 +730,7 @@ with col_ensemble:
     fig_bar.update_layout(
         plot_bgcolor="#040508",
         paper_bgcolor="#040508",
-        font=dict(color="#cbd5e1", family="Space Grotesk"),
+        font=dict(color="#cbd5e1", family="Inter, sans-serif"),
         xaxis=dict(gridcolor="rgba(255,255,255,0.03)", title=dict(text="Valence Score", font=dict(size=11, color="#64748b"))),
         yaxis=dict(title="", tickfont=dict(size=11)),
         margin=dict(l=10, r=20, t=10, b=40),
@@ -736,7 +785,7 @@ if spec_info and "matrix" in spec_info:
     fig_spec.update_layout(
         plot_bgcolor="#040508",
         paper_bgcolor="#040508",
-        font=dict(color="#cbd5e1", family="Space Grotesk"),
+        font=dict(color="#cbd5e1", family="Inter, sans-serif"),
         xaxis=dict(title=dict(text="Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
         yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
         margin=dict(l=40, r=20, t=10, b=40),
@@ -776,10 +825,10 @@ if trajectory and len(trajectory) > 1:
         x=df_traj["time_start_sec"],
         y=df_traj["valence"],
         mode="lines+markers",
-        line=dict(color="#38bdf8", width=3, shape="spline"),
-        marker=dict(size=8, color="#ffffff", line=dict(color="#38bdf8", width=2)),
+        line=dict(color="#00e5ff", width=3, shape="spline"),
+        marker=dict(size=8, color="#ffffff", line=dict(color="#00e5ff", width=2)),
         fill="tozeroy",
-        fillcolor="rgba(56, 189, 248, 0.06)",
+        fillcolor="rgba(0, 229, 255, 0.08)",
         hovertemplate="Timestamp: %{x:.1f}s<br>Valence: %{y:.4f}<extra></extra>",
         name="Valence Track"
     ))
@@ -795,7 +844,7 @@ if trajectory and len(trajectory) > 1:
     fig_traj.update_layout(
         plot_bgcolor="#040508",
         paper_bgcolor="#040508",
-        font=dict(color="#cbd5e1", family="Space Grotesk"),
+        font=dict(color="#cbd5e1", family="Inter, sans-serif"),
         yaxis=dict(title=dict(text="Valence", font=dict(size=11, color="#64748b")), range=y_range, gridcolor="rgba(255,255,255,0.03)"),
         xaxis=dict(title=dict(text="Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.03)"),
         height=270,
@@ -878,7 +927,7 @@ if gradcam_res and "raising_map" in gradcam_res:
         fig_raise.update_layout(
             plot_bgcolor="#040508",
             paper_bgcolor="#040508",
-            font=dict(color="#cbd5e1", family="Space Grotesk"),
+            font=dict(color="#cbd5e1", family="Inter, sans-serif"),
             xaxis=dict(title=dict(text="Window Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
             yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
             margin=dict(l=40, r=20, t=10, b=40),
@@ -904,7 +953,7 @@ if gradcam_res and "raising_map" in gradcam_res:
         fig_lower.update_layout(
             plot_bgcolor="#040508",
             paper_bgcolor="#040508",
-            font=dict(color="#cbd5e1", family="Space Grotesk"),
+            font=dict(color="#cbd5e1", family="Inter, sans-serif"),
             xaxis=dict(title=dict(text="Window Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
             yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
             margin=dict(l=40, r=20, t=10, b=40),
@@ -933,7 +982,7 @@ if gradcam_res and "raising_map" in gradcam_res:
         fig_bipolar.update_layout(
             plot_bgcolor="#040508",
             paper_bgcolor="#040508",
-            font=dict(color="#cbd5e1", family="Space Grotesk"),
+            font=dict(color="#cbd5e1", family="Inter, sans-serif"),
             xaxis=dict(title=dict(text="Window Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
             yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
             margin=dict(l=40, r=20, t=10, b=40),
@@ -956,7 +1005,7 @@ if gradcam_res and "raising_map" in gradcam_res:
 
         col_b1, col_b2 = st.columns(2)
         with col_b1:
-            st.markdown("<div style='font-size:12px; font-weight:700; color:#f87171; margin-bottom:8px;'>Positive Valence Band Distribution</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:12px; font-weight:700; color:#ff3366; margin-bottom:8px;'>Positive Valence Band Distribution</div>", unsafe_allow_html=True)
             for band_name, share in raising_bands.items():
                 pct = share * 100
                 st.markdown(f"""
@@ -965,12 +1014,12 @@ if gradcam_res and "raising_map" in gradcam_res:
                     <span style="color:#ffffff; font-family:'JetBrains Mono'; font-weight:600;">{pct:.1f}%</span>
                 </div>
                 <div style="background: rgba(255,255,255,0.05); height: 3px; border-radius: 2px; margin-bottom: 7px; overflow: hidden;">
-                    <div style="background: #f87171; width: {pct}%; height: 100%;"></div>
+                    <div style="background: #ff3366; width: {pct}%; height: 100%;"></div>
                 </div>
                 """, unsafe_allow_html=True)
 
         with col_b2:
-            st.markdown("<div style='font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:8px;'>Negative Valence Band Distribution</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:12px; font-weight:700; color:#00e5ff; margin-bottom:8px;'>Negative Valence Band Distribution</div>", unsafe_allow_html=True)
             for band_name, share in lowering_bands.items():
                 pct = share * 100
                 st.markdown(f"""
@@ -979,7 +1028,7 @@ if gradcam_res and "raising_map" in gradcam_res:
                     <span style="color:#ffffff; font-family:'JetBrains Mono'; font-weight:600;">{pct:.1f}%</span>
                 </div>
                 <div style="background: rgba(255,255,255,0.05); height: 3px; border-radius: 2px; margin-bottom: 7px; overflow: hidden;">
-                    <div style="background: #38bdf8; width: {pct}%; height: 100%;"></div>
+                    <div style="background: #00e5ff; width: {pct}%; height: 100%;"></div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -1000,7 +1049,7 @@ with st.expander("View Detailed Acoustic Physics DNA (34 Descriptors)"):
         col.markdown(f"""
         <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px;">
             <div style="font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 700;">{k.split('(')[0].strip()}</div>
-            <div style="font-size: 15px; color: #38bdf8; font-weight: 700; font-family: 'JetBrains Mono'; margin-top: 3px;">{v}</div>
+            <div style="font-size: 15px; color: #00e5ff; font-weight: 700; font-family: 'JetBrains Mono'; margin-top: 3px;">{v}</div>
         </div>
         """, unsafe_allow_html=True)
 
