@@ -38,63 +38,83 @@ Phase 2 transformed HarmoniX into a multimodal deep learning platform:
 ## 2. Phase 2 Multimodal Master Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '13px', 'darkMode': true, 'background': '#0b0f19', 'mainBkg': '#111827', 'lineColor': '#60a5fa', 'textColor': '#f3f4f6' }}}%%
 flowchart TB
-    subgraph STAGE1["Stage 1: Raw Audio Ingestion & Windowing"]
-        RAW["Raw Audio Excerpt (WAV / MP3)"] --> PRE["Audio Normalization & Resampling (22.05 kHz Mono)"]
-        PRE --> WIN["Dynamic Overlapping Windowing (3.0s Window, 1.5s Hop)"]
+    subgraph S1["STAGE 1: SIGNAL INGESTION & DYNAMIC WINDOWING"]
+        direction LR
+        RAW["Raw Audio Excerpt<br/><code>.wav</code> / <code>.mp3</code> (22.05 kHz)"]:::rawNode
+        PRE["DSP Normalization<br/>Peak dB Norm & Mono Conversion"]:::procNode
+        WIN["Dynamic Rolling Segmentation<br/>3.0s Windows • 50% Overlap (1.5s Hop)"]:::procNode
+        RAW ==> PRE ==> WIN
     end
 
-    WIN --> BRANCH_SPEC
-    WIN --> BRANCH_PHYS
+    WIN ==>|"Audio Frame Stream x(t)"| B_SPEC
+    WIN ==>|"Synchronized Audio Windows"| B_PHYS
 
-    subgraph STAGE2["Stage 2: Dual-Branch Feature Extraction"]
-        subgraph BRANCH_SPEC["Branch A: Audio Spectroscopy"]
-            SPEC["128-Mel Power Spectrogram (Slaney Mel Scale, dB Compression)"]
-            AUG["SpecAugment (Time & Frequency Masking, Train Only)"]
-            SPEC --> AUG
-            TENSOR["Spectrogram Tensor: (B, 1, 128, 126)"]
-            AUG --> TENSOR
+    subgraph S2["STAGE 2: DUAL-BRANCH FEATURE EXTRACTION"]
+        direction TB
+        subgraph B_SPEC["Branch A: Deep Audio Spectroscopy"]
+            SPEC["128-Mel Power Spectrogram<br/>Hann Window • Slaney Scale • Log dB (80 dB)"]:::specNode
+            AUG["SpecAugment Regularizer<br/>Frequency & Time Masking (Train Only)"]:::specNode
+            TENSOR["Spectrogram Tensor<br/><code>B × 1 × 128 × 126</code>"]:::specTensor
+            SPEC ==> AUG ==> TENSOR
         end
 
-        subgraph BRANCH_PHYS["Branch B: Physics & Timbral Descriptors"]
-            TOP8["Selected Top-8 Acoustic Descriptors<br/>• MFCC 1, Spectral Flatness, ZCR, Spectral Contrast<br/>• Spectral Centroid, Rolloff, Bandwidth, Dissonance"]
-            SCALE["StandardScaler (Trained on Train Split Only)"]
-            TOP8 --> SCALE
-            TAB_TENSOR["Acoustic Vector: (B, 8)"]
-            SCALE --> TAB_TENSOR
+        subgraph B_PHYS["Branch B: Physics & Timbral Descriptors"]
+            TOP8["8 Selected Acoustic Physics Features<br/>• MFCC 1 • Spectral Flatness • ZCR • Spectral Contrast<br/>• Centroid • Rolloff • Bandwidth • Sensory Dissonance"]:::physNode
+            SCALE["Zero-Leakage StandardScaler<br/>Fit on Train Windows Only"]:::physNode
+            PHYS_TENSOR["Acoustic Feature Vector<br/><code>B × 8 (Normalized)</code>"]:::physTensor
+            TOP8 ==> SCALE ==> PHYS_TENSOR
         end
     end
 
-    subgraph STAGE3["Stage 3: Deep Neural Backbone & Fusion"]
-        TENSOR --> CNN_BLOCKS["4-Block 2D-CNN Backbone<br/>Conv2D (3x3) + BatchNorm + ReLU + MaxPool (2x2) + Dropout"]
-        CNN_BLOCKS --> DUAL_POOL["Dual Adaptive Pooling (AvgPool + MaxPool = 256-dim)"]
-        DUAL_POOL --> PROJ["Dense Projection + LayerNorm + Dropout (64-dim)"]
-        
-        PROJ --> FUSION_CONCAT["Multimodal Fusion Layer (64 CNN + 8 Physics = 72-dim)"]
-        TAB_TENSOR --> FUSION_CONCAT
-        
-        FUSION_CONCAT --> FUSION_HEAD["Fusion MLP Head (Dense 64 -> Dense 32 -> Dense 1)"]
-        FUSION_HEAD --> SIGMOID["Calibrated Sigmoid Output"]
-        SIGMOID --> VALENCE["Predicted Valence ∈ [0.0, 1.0]"]
+    subgraph S3["STAGE 3: MULTIMODAL DEEP NEURAL NETWORK"]
+        direction TB
+        subgraph CNN_SUB["2D-CNN Latent Spatial Backbone"]
+            C1["Conv Block 1: Conv2D(1→32) + BN + ReLU + MaxPool(2×2) + Drop(0.10)"]:::cnnNode
+            C2["Conv Block 2: Conv2D(32→64) + BN + ReLU + MaxPool(2×2) + Drop(0.15)"]:::cnnNode
+            C3["Conv Block 3: Conv2D(64→128) + BN + ReLU + MaxPool(2×2) + Drop(0.20)"]:::cnnNode
+            C4["Conv Block 4: Conv2D(128→128) + BN + ReLU + MaxPool(2×2) + Drop(0.25)"]:::cnnTarget
+            POOL["Dual Global Pooling: AdaptiveAvgPool(1×1) ⊕ AdaptiveMaxPool(1×1)"]:::cnnNode
+            PROJ["Latent Projection: Dense(256→64) + LayerNorm + ReLU + Drop(0.25)"]:::cnnNode
+            C1 ==> C2 ==> C3 ==> C4 ==> POOL ==> PROJ
+        end
+
+        subgraph FUSION_SUB["Multimodal Late Fusion & Calibration"]
+            F_CONCAT["Feature Fusion: Concat[CNN Embedding (64) + Physics (8)] = 72-dim"]:::fuseNode
+            F_MLP["Multimodal MLP Head: Dense(72→64) → ReLU → Dense(64→32) → Dense(32→1)"]:::fuseNode
+            SIGMOID["Calibrated Sigmoid: Predicted Valence Score ∈ [0.0, 1.0]"]:::outNode
+            F_CONCAT ==> F_MLP ==> SIGMOID
+        end
+
+        TENSOR ==> C1
+        PROJ ==> F_CONCAT
+        PHYS_TENSOR ==> F_CONCAT
     end
 
-    subgraph STAGE4["Stage 4: Explainable AI & Studio Telemetry"]
-        CNN_BLOCKS -.->|"Backward Gradients"| GRADCAM["Signed Pre-Sigmoid Grad-CAM<br/>(Raising vs Lowering Attribution)"]
-        FUSION_CONCAT -.->|"Permutation Analysis"| SHAPLEY["Exact 256-Coalition Shapley Values"]
-        VALENCE --> STUDIO["HarmoniX Audio Studio<br/>• Russell 2D Mood Compass<br/>• SVG Dynamic Arc Dials<br/>• Time-Frequency Attribution Heatmap"]
-        GRADCAM --> STUDIO
-        SHAPLEY --> STUDIO
+    subgraph S4["STAGE 4: EXPLAINABLE AI & HARMONIX STUDIO TELEMETRY"]
+        direction LR
+        XAI_CAM["Signed Pre-Sigmoid Grad-CAM<br/>Time-Frequency Uplift vs Somber Attribution"]:::xaiNode
+        XAI_SHAP["Exact 256-Coalition Shapley Values<br/>Modality & Descriptor Influence"]:::xaiNode
+        STUDIO["HarmoniX Audio Studio<br/>• Russell 2D Mood Compass<br/>• SVG Hardware Gauges<br/>• Consensus Benchmark"]:::studioNode
+
+        SIGMOID ==> STUDIO
+        C4 -.->|"Target Layer Gradients"| XAI_CAM ==> STUDIO
+        F_CONCAT -.->|"Coalition Attributions"| XAI_SHAP ==> STUDIO
     end
 
-    classDef stage fill:#0f172a,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
-    classDef branch fill:#042f2e,stroke:#14b8a6,stroke-width:1.5px,color:#ccfbf1;
-    classDef model fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#e0e7ff;
-    classDef xai fill:#3b0764,stroke:#c084fc,stroke-width:1.5px,color:#f3e8ff;
-    
-    class STAGE1,STAGE2 stage;
-    class BRANCH_SPEC,BRANCH_PHYS branch;
-    class STAGE3 model;
-    class STAGE4 xai;
+    classDef rawNode fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc;
+    classDef procNode fill:#1e293b,stroke:#0ea5e9,stroke-width:1.5px,color:#f1f5f9;
+    classDef specNode fill:#042f2e,stroke:#10b981,stroke-width:1.5px,color:#ecfdf5;
+    classDef specTensor fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#ffffff;
+    classDef physNode fill:#2e1065,stroke:#a855f7,stroke-width:1.5px,color:#faf5ff;
+    classDef physTensor fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#ffffff;
+    classDef cnnNode fill:#1e1b4b,stroke:#6366f1,stroke-width:1.5px,color:#e0e7ff;
+    classDef cnnTarget fill:#312e81,stroke:#818cf8,stroke-width:2px,color:#ffffff;
+    classDef fuseNode fill:#172554,stroke:#3b82f6,stroke-width:2px,color:#eff6ff;
+    classDef outNode fill:#052e16,stroke:#22c55e,stroke-width:2px,color:#ffffff;
+    classDef xaiNode fill:#4c0519,stroke:#f43f5e,stroke-width:1.5px,color:#ffe4e6;
+    classDef studioNode fill:#022c22,stroke:#00ffaa,stroke-width:2px,color:#ffffff;
 ```
 
 ---
@@ -139,6 +159,35 @@ The Phase 2 deep learning pipeline (implemented in `src/models_cnn.py` and `src/
 
 ### 5.1 2D-CNN Spectrogram Feature Extractor (`SpectrogramCNNBackbone`)
 The neural backbone processes normalized log-Mel spectrogram slices of shape $(B, 1, 128, 126)$ through four hierarchical convolutional blocks, designed to learn both local acoustic timbral textures and broader musical phrasing:
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '12px', 'darkMode': true, 'background': '#0b0f19', 'mainBkg': '#111827', 'lineColor': '#818cf8', 'textColor': '#f3f4f6' }}}%%
+flowchart LR
+    INPUT["Spectrogram Slice<br/><code>(B, 1, 128, 126)</code>"]:::tNode
+    ==> B1["Conv Block 1<br/>32 ch • MaxPool<br/><code>(B, 32, 64, 63)</code>"]:::cNode
+    ==> B2["Conv Block 2<br/>64 ch • MaxPool<br/><code>(B, 64, 32, 31)</code>"]:::cNode
+    ==> B3["Conv Block 3<br/>128 ch • MaxPool<br/><code>(B, 128, 16, 15)</code>"]:::cNode
+    ==> B4["Conv Block 4 [Target Layer]<br/>128 ch • MaxPool<br/><code>(B, 128, 8, 7)</code>"]:::targetNode
+    ==> POOL["Dual Adaptive Pooling<br/>AvgPool(128) ⊕ MaxPool(128)<br/><code>(B, 256)</code>"]:::pNode
+    ==> PROJ["Latent Projection<br/>Dense + LayerNorm + Drop<br/><code>(B, 64)</code>"]:::projNode
+    ==> FUSE{"Multimodal Fusion<br/>Concat with<br/>Physics Vector (8)"}:::fuseNode
+    ==> MLP["Fusion MLP Head<br/>Dense(72→64→32→1)"]:::mlpNode
+    ==> OUT["Sigmoid Valence<br/><code>ŷ ∈ [0.0, 1.0]</code>"]:::outNode
+
+    PHYS["Scaled Physics Vector<br/><code>(B, 8)</code>"]:::physNode ==> FUSE
+    B4 -.->|"Backward Gradients"| CAM["Signed Grad-CAM<br/>Time-Frequency Map"]:::camNode
+
+    classDef tNode fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc;
+    classDef cNode fill:#1e1b4b,stroke:#6366f1,stroke-width:1.5px,color:#e0e7ff;
+    classDef targetNode fill:#312e81,stroke:#818cf8,stroke-width:2px,color:#ffffff;
+    classDef pNode fill:#172554,stroke:#3b82f6,stroke-width:1.5px,color:#eff6ff;
+    classDef projNode fill:#042f2e,stroke:#10b981,stroke-width:1.5px,color:#ecfdf5;
+    classDef physNode fill:#2e1065,stroke:#a855f7,stroke-width:1.5px,color:#faf5ff;
+    classDef fuseNode fill:#422006,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+    classDef mlpNode fill:#1e293b,stroke:#0ea5e9,stroke-width:1.5px,color:#f1f5f9;
+    classDef outNode fill:#052e16,stroke:#22c55e,stroke-width:2px,color:#ffffff;
+    classDef camNode fill:#4c0519,stroke:#f43f5e,stroke-width:1.5px,color:#ffe4e6;
+```
 
 ```text
 Input Spectrogram Tensor: (B, 1, 128, 126)  [Normalized to [0.0, 1.0] from 80 dB dynamic range]
@@ -219,6 +268,40 @@ $$r(y, \hat{y}) = \frac{\sum_{i=1}^B (y_i - \bar{y})(\hat{y}_i - \bar{\hat{y}})}
 ---
 
 ## 6. Phase 2 Explainable AI (XAI) Suite (`src/deep_explainability.py`)
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontFamily': 'Inter, system-ui, sans-serif', 'fontSize': '12px', 'darkMode': true, 'background': '#0b0f19', 'mainBkg': '#111827', 'lineColor': '#f43f5e', 'textColor': '#f3f4f6' }}}%%
+flowchart LR
+    subgraph G1["Forward & Attribution"]
+        direction TB
+        F_IN["Audio Window<br/>Spectrogram + Physics"]:::xNode
+        ==> F_MODEL["Hybrid Fusion Network<br/>Forward Pass"]:::mNode
+        ==> F_OUT["Pre-Sigmoid Valence<br/>Logit Output: z"]:::oNode
+        F_OUT ==>|"∂z / ∂A^k"| G_GRAD["Backprop Gradients<br/>to Block 4 Feature Maps"]:::gNode
+    end
+
+    subgraph G2["Spatial Time-Frequency Heatmaps"]
+        direction TB
+        G_GRAD ==> CAM_POS["Valence-Raising Map<br/>Major harmonics & brightness"]:::posNode
+        G_GRAD ==> CAM_NEG["Valence-Depressing Map<br/>Dissonance & somber sub-bass"]:::negNode
+    end
+
+    subgraph G3["Verification & Sanity Protocol"]
+        direction TB
+        TEST_RAND["Weight Randomization Test<br/>Weights scrambled → Map vanishes"]:::vNode
+        TEST_DEL["Deletion Faithfulness Test<br/>Salient bins masked → Rapid score drop"]:::vNode
+        CAM_POS & CAM_NEG ==> TEST_RAND & TEST_DEL
+    end
+
+    classDef xNode fill:#0f172a,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc;
+    classDef mNode fill:#1e1b4b,stroke:#818cf8,stroke-width:1.5px,color:#e0e7ff;
+    classDef oNode fill:#052e16,stroke:#22c55e,stroke-width:1.5px,color:#ffffff;
+    classDef gNode fill:#312e81,stroke:#6366f1,stroke-width:1.5px,color:#eff6ff;
+    classDef posNode fill:#042f2e,stroke:#10b981,stroke-width:2px,color:#ffffff;
+    classDef negNode fill:#4c0519,stroke:#f43f5e,stroke-width:2px,color:#ffffff;
+    classDef vNode fill:#1e293b,stroke:#eab308,stroke-width:1.5px,color:#fef9c3;
+```
+
 - **Signed Pre-Sigmoid Grad-CAM:** Hooks into Block 4 conv layer prior to non-linear saturation. Produces signed attribution heatmaps isolating time-frequency regions that elevate perceived valence (uplifting/major acoustic markers) versus regions that depress valence (somber/tense markers).
 - **Integrated Gradients:** Evaluated with a zero-energy silence baseline over $256$ integration steps with verified completeness checks ($\sum \text{Attributions} = f(x) - f(\text{baseline})$).
 - **Exact Tabular Shapley Values:** Computes exact Shapley attribution over all $2^8 = 256$ feature coalitions for the acoustic branch, isolating the relative contribution of timbre vs. sensory roughness.
