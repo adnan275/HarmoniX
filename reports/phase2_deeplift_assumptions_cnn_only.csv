@@ -1,0 +1,5 @@
+variant,median_relative_gap,fraction_within_tolerance
+deployed model,1.003526210784912,0.0
+LayerNorm -> identity,0.1787395179271698,0.12
+AdaptiveMaxPool -> average pool,0.628821849822998,0.0
+both replaced,0.014003940857946873,0.82
