@@ -8,6 +8,7 @@ Minimalist Studio Edition (No Emojis, Pure Dark Scientific Aesthetic)
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib_cache"
 
 import sys
 import tempfile
@@ -20,6 +21,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import streamlit as st
 import numpy as np
 import pandas as pd
+import librosa
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -38,19 +40,19 @@ st.markdown("""
 
     /* Global Pitch Black Canvas */
     .stApp {
-        background-color: #050608 !important;
+        background-color: #000000 !important;
         background-image: 
-            radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.04) 0%, transparent 45%),
-            radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.03) 0%, transparent 40%);
+            radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.05) 0%, transparent 55%),
+            radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.04) 0%, transparent 45%);
         color: #f1f5f9 !important;
         font-family: 'Space Grotesk', -apple-system, sans-serif !important;
     }
 
     /* Container Spacing */
     .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 1.4rem !important;
         padding-bottom: 2rem !important;
-        max-width: 1240px !important;
+        max-width: 1260px !important;
     }
 
     /* Hide Streamlit Header */
@@ -61,8 +63,8 @@ st.markdown("""
 
     /* Sidebar - Ultra Clean Matte */
     [data-testid="stSidebar"] {
-        background: #08090d !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: #050608 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
     }
 
     /* Equalizer Bar Animation */
@@ -75,7 +77,7 @@ st.markdown("""
     }
     .eq-bar {
         width: 3px;
-        background: #38bdf8;
+        background: #00e5ff;
         border-radius: 2px;
         animation: eqPulse 1.2s ease-in-out infinite alternate;
     }
@@ -90,64 +92,89 @@ st.markdown("""
         100% { height: 100%; }
     }
 
+    /* Pulse Status Dot */
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: #00e5ff;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 10px #00e5ff, 0 0 20px rgba(0, 229, 255, 0.6);
+        animation: pulseGlow 1.8s infinite;
+    }
+    @keyframes pulseGlow {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.25); opacity: 0.75; }
+    }
+
     /* Studio Metric Card */
     .metric-card {
-        background: rgba(15, 18, 28, 0.75);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: #06070a;
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
-        padding: 16px 20px;
-        transition: all 0.25s ease;
+        padding: 14px 16px;
+        min-height: 195px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
     }
     .metric-card:hover {
-        border-color: rgba(56, 189, 248, 0.3);
+        border-color: rgba(255, 255, 255, 0.18);
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8), 0 0 22px rgba(0, 229, 255, 0.08);
     }
     .card-label {
-        font-size: 11px;
-        font-weight: 600;
+        font-size: 10.5px;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
         color: #64748b;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
     .card-number {
-        font-size: 30px;
-        font-weight: 700;
+        font-size: 28px;
+        font-weight: 800;
         font-family: 'JetBrains Mono', monospace;
         letter-spacing: -0.02em;
         color: #ffffff;
+        line-height: 1.1;
     }
 
     /* Minimal Quadrant Badges */
     .badge-quad {
         display: inline-flex;
         align-items: center;
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 12px;
+        padding: 5px 13px;
+        border-radius: 8px;
+        font-size: 13px;
         font-weight: 700;
         letter-spacing: 0.02em;
     }
     .badge-joyful {
-        background: rgba(16, 185, 129, 0.1);
-        color: #34d399;
-        border: 1px solid rgba(52, 211, 153, 0.3);
+        background: rgba(0, 230, 153, 0.12);
+        color: #00e699;
+        border: 1px solid rgba(0, 230, 153, 0.4);
+        box-shadow: 0 0 16px rgba(0, 230, 153, 0.2);
     }
     .badge-tense {
-        background: rgba(239, 68, 68, 0.1);
-        color: #f87171;
-        border: 1px solid rgba(248, 113, 113, 0.3);
+        background: rgba(255, 51, 102, 0.12);
+        color: #ff3366;
+        border: 1px solid rgba(255, 51, 102, 0.4);
+        box-shadow: 0 0 16px rgba(255, 51, 102, 0.2);
     }
     .badge-melancholic {
-        background: rgba(168, 85, 247, 0.1);
+        background: rgba(168, 85, 247, 0.12);
         color: #c084fc;
-        border: 1px solid rgba(192, 132, 252, 0.3);
+        border: 1px solid rgba(192, 132, 252, 0.4);
+        box-shadow: 0 0 16px rgba(192, 132, 252, 0.2);
     }
     .badge-calm {
-        background: rgba(59, 130, 246, 0.1);
-        color: #60a5fa;
-        border: 1px solid rgba(96, 165, 250, 0.3);
+        background: rgba(0, 229, 255, 0.12);
+        color: #00e5ff;
+        border: 1px solid rgba(0, 229, 255, 0.4);
+        box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
     }
 
     /* Audio Element Inversion */
@@ -156,6 +183,118 @@ st.markdown("""
         border-radius: 8px;
         filter: invert(0.92) hue-rotate(180deg);
         opacity: 0.95;
+    }
+
+    /* Glassmorphic Panels */
+    .studio-panel {
+        background: #06070a;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 14px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
+        transition: border-color 0.25s ease;
+    }
+    .studio-panel:hover {
+        border-color: rgba(255, 255, 255, 0.14);
+    }
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .panel-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #f1f5f9;
+        letter-spacing: -0.01em;
+    }
+    .panel-subtitle {
+        font-size: 11.5px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+    .card-subtext {
+        font-size: 11.5px;
+        color: #64748b;
+        margin-top: 4px;
+        font-weight: 500;
+    }
+    .progress-track {
+        background: rgba(255, 255, 255, 0.06);
+        height: 5px;
+        border-radius: 3px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.4s ease;
+    }
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 3px 10px;
+        font-size: 10.5px;
+        color: #94a3b8;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Streamlit Tabs Customization */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 6px;
+        background-color: transparent;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding-bottom: 2px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: 34px;
+        background-color: rgba(255, 255, 255, 0.02);
+        border-radius: 6px 6px 0px 0px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: none;
+        color: #94a3b8;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 6px 14px;
+        transition: all 0.2s ease;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: rgba(56, 189, 248, 0.08) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(56, 189, 248, 0.35) !important;
+        border-bottom: 2px solid #38bdf8 !important;
+    }
+
+    /* Sidebar Form Polish */
+    [data-testid="stSidebar"] div[data-baseweb="select"] > div {
+        background-color: #0b0d14 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 8px !important;
+        color: #f1f5f9 !important;
+        font-size: 12px !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+        font-size: 12px;
+    }
+    .streamlit-expanderHeader {
+        background: rgba(15, 18, 28, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 8px !important;
+        color: #cbd5e1 !important;
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -211,21 +350,28 @@ col_title, col_status = st.columns([2, 1])
 
 with col_title:
     st.markdown("""
-    <div style="display:flex; align-items:center; gap:10px;">
+    <div style="display:flex; align-items:center; gap:12px;">
         <span style="font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color:#ffffff;">HarmoniX Audio Studio</span>
         <div class="eq-container">
             <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
         </div>
     </div>
-    <div style="font-size: 13px; color: #64748b; margin-top: 2px;">Multimodal Music Emotion Recognition | 2D Spectrogram Neural Intelligence</div>
+    <div style="font-size: 12.5px; color: #64748b; margin-top: 4px;">Multimodal Music Emotion Perception & 2D Spectrogram Neural Intelligence</div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top: 8px;">
+        <span class="chip">Phase 2 Champion Hybrid Fusion</span>
+        <span class="chip">128 Mel Bins (Slaney)</span>
+        <span class="chip">22.05 kHz DSP</span>
+        <span class="chip">Grad-CAM Attribution</span>
+    </div>
     """, unsafe_allow_html=True)
 
 with col_status:
     st.markdown("""
     <div style="text-align: right; padding-top: 4px;">
-        <span style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700;">
-            ENGINE READY
-        </span>
+        <div style="display:inline-flex; align-items:center; gap:6px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 20px; padding: 5px 14px;">
+            <span style="width: 7px; height: 7px; background: #38bdf8; border-radius: 50%; box-shadow: 0 0 8px #38bdf8; display:inline-block;"></span>
+            <span style="color: #38bdf8; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">ENGINE ACTIVE</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -237,19 +383,6 @@ if selected_audio_path is None:
 
 
 with st.container():
-    c_play, c_spec = st.columns([1.5, 1])
-
-    with c_play:
-        st.markdown(f"""
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
-            <div style="font-size: 15px; font-weight: 700; color: #ffffff;">{audio_label}</div>
-            <span style="background: rgba(255,255,255,0.06); color: #94a3b8; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600;">{genre_badge}</span>
-        </div>
-        """, unsafe_allow_html=True)
-        with open(selected_audio_path, "rb") as f_audio:
-            audio_bytes = f_audio.read()
-        st.audio(audio_bytes, format="audio/wav")
-
     with st.spinner("Analyzing audio frequencies and generating neural predictions..."):
         try:
             results = predict_audio(selected_audio_path)
@@ -259,22 +392,46 @@ with st.container():
 
     meta = results["metadata"]
 
-    with c_spec:
-        st.markdown(f"""
-        <div style="background: rgba(10, 13, 20, 0.85); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 18px;">
-            <div style="font-size: 10px; text-transform: uppercase; color: #38bdf8; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px;">Audio Signal Normalization</div>
-            <div style="display:flex; justify-content:space-between; font-size: 12px; color: #cbd5e1; margin-bottom: 3px;">
-                <span>Duration: <b>{meta['duration_seconds']:.2f}s</b></span>
-                <span>Sample Rate: <b>{meta['target_sample_rate']} Hz</b></span>
+    st.markdown(f"""
+    <div style="background: linear-gradient(165deg, rgba(14, 18, 28, 0.95) 0%, rgba(8, 10, 16, 0.98) 100%); border: 1px solid rgba(56, 189, 248, 0.22); border-radius: 14px; padding: 16px 20px 14px 20px; margin-bottom: 14px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.05);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="pulse-dot"></span>
+                <div>
+                    <div style="font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">{audio_label}</div>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 3px;">
+                        <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 4px; padding: 1px 7px; font-size: 10px; font-weight: 700; text-transform: uppercase;">{genre_badge}</span>
+                        <span style="font-size: 11px; color: #64748b; font-family: 'JetBrains Mono';">Slaney DSP • 22.05 kHz Ingestion</span>
+                    </div>
+                </div>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size: 12px; color: #cbd5e1;">
-                <span>Channels: <b>Mono (Downmixed)</b></span>
-                <span>Peak Loudness: <b>{meta['normalized_peak']:.2f}</b></span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
+                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Duration</div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: #f1f5f9; font-family: 'JetBrains Mono';">{meta['duration_seconds']:.1f}s</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
+                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Sample Rate</div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: #00e5ff; font-family: 'JetBrains Mono';">{meta['target_sample_rate']} Hz</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
+                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Signal</div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: #cbd5e1; font-family: 'JetBrains Mono';">Mono Downmix</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 4px 10px; text-align: center;">
+                    <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 700;">Peak Level</div>
+                    <div style="font-size: 12.5px; font-weight: 700; color: #00e699; font-family: 'JetBrains Mono';">{meta['normalized_peak']:.2f} pk</div>
+                </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
-st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+    with open(selected_audio_path, "rb") as f_audio:
+        audio_bytes = f_audio.read()
+    st.audio(audio_bytes, format="audio/wav")
+
+st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
 v_score = results["primary_valence"]
 a_score = results["estimated_arousal"]
@@ -282,51 +439,115 @@ quadrant = results["emotional_quadrant"]
 
 badge_class = "badge-joyful" if "Q1" in quadrant else "badge-tense" if "Q2" in quadrant else "badge-melancholic" if "Q3" in quadrant else "badge-calm"
 
+import math
+
+def render_gauge_svg(val, min_v, max_v, col, grad_id, c1, c2, center_label, subtext, t_left, t_mid, t_right):
+    p = max(0.0, min(1.0, (val - min_v) / (max_v - min_v)))
+    r = 58
+    total_len = math.pi * r
+    offset = total_len * (1.0 - p)
+    nx = 100.0 - r * math.cos(p * math.pi)
+    ny = 88.0 - r * math.sin(p * math.pi)
+    return f"""
+    <svg viewBox="0 0 200 108" style="width:100%; height:auto; display:block; margin: 4px auto 0 auto;">
+        <defs>
+            <linearGradient id="{grad_id}" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="{c1}"/>
+                <stop offset="100%" stop-color="{c2}"/>
+            </linearGradient>
+            <filter id="glow-{grad_id}" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="0" stdDeviation="3.5" flood-color="{col}" flood-opacity="0.85"/>
+            </filter>
+        </defs>
+        <path d="M 42 88 A 58 58 0 0 1 158 88" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8" stroke-linecap="round"/>
+        <path d="M 42 88 A 58 58 0 0 1 158 88" fill="none" stroke="url(#{grad_id})" stroke-width="8" stroke-linecap="round"
+              stroke-dasharray="{total_len:.2f}" stroke-dashoffset="{offset:.2f}" filter="url(#glow-{grad_id})"/>
+        <circle cx="{nx:.1f}" cy="{ny:.1f}" r="4.5" fill="#ffffff" stroke="{col}" stroke-width="2" filter="drop-shadow(0 0 6px {col})"/>
+        <text x="100" y="74" text-anchor="middle" font-size="25" font-weight="800" font-family="'JetBrains Mono', monospace" fill="#ffffff" filter="drop-shadow(0 0 8px {col}88)">{center_label}</text>
+        <text x="100" y="90" text-anchor="middle" font-size="10" font-weight="600" font-family="'Space Grotesk', sans-serif" fill="#94a3b8">{subtext}</text>
+        <text x="42" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#64748b">{t_left}</text>
+        <text x="100" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#64748b">{t_mid}</text>
+        <text x="158" y="103" text-anchor="middle" font-size="8.5" font-family="'JetBrains Mono', monospace" fill="#64748b">{t_right}</text>
+    </svg>
+    """
+
 m1, m2, m3, m4 = st.columns(4)
 
 with m1:
-    v_col = "#34d399" if v_score >= 0.50 else "#f87171"
+    v_col = "#00e699" if v_score >= 0.50 else "#ff3366"
+    v_grad_c1 = "#059669" if v_score >= 0.50 else "#991b1b"
+    v_grad_c2 = "#00e699" if v_score >= 0.50 else "#ff3366"
+    v_bias = v_score - 0.50
+    bias_str = f"+{v_bias:.3f} Uplift" if v_bias >= 0 else f"{v_bias:.3f} Somber"
+    tag_str = "MAJOR / UPLIFT" if v_score >= 0.50 else "SOMBER / MINOR"
+    svg_v = render_gauge_svg(v_score, 0.0, 1.0, v_col, "vGrad", v_grad_c1, v_grad_c2, f"{v_score:.3f}", bias_str, "0.0", "0.5", "1.0")
     st.markdown(f"""
-    <div class="metric-card">
-        <div class="card-label">Predicted Valence</div>
-        <div class="card-number" style="color: {v_col};">{v_score:.3f}</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;">
-            {'Positive / Uplifting' if v_score >= 0.50 else 'Somber / Minor Mood'}
+    <div class="metric-card" style="border-top: 2px solid {v_col};">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-label">Valence Polarity</span>
+            <span style="font-size:9.5px; font-weight:700; color:{v_col}; background:{v_col}18; border:1px solid {v_col}44; padding:2px 7px; border-radius:4px; font-family:'JetBrains Mono';">{tag_str}</span>
         </div>
+        {svg_v}
     </div>
     """, unsafe_allow_html=True)
 
 with m2:
+    pct_ar = max(0.0, min(100.0, a_score * 100))
+    energy_label = "HIGH KINETIC" if a_score >= 0.65 else "MODERATE" if a_score >= 0.40 else "SUBDUED / LOW"
+    svg_a = render_gauge_svg(a_score, 0.0, 1.0, "#00e5ff", "aGrad", "#0284c7", "#00e5ff", f"{a_score:.3f}", f"Dynamic Energy: {pct_ar:.1f}%", "0.0", "0.5", "1.0")
     st.markdown(f"""
-    <div class="metric-card">
-        <div class="card-label">Estimated Arousal</div>
-        <div class="card-number" style="color: #60a5fa;">{a_score:.3f}</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;">
-            {'Dynamic Energy' if a_score >= 0.50 else 'Subdued / Calm'}
+    <div class="metric-card" style="border-top: 2px solid #00e5ff;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-label">Dynamic Arousal</span>
+            <span style="font-size:9.5px; font-weight:700; color:#00e5ff; background:rgba(0,229,255,0.14); border:1px solid rgba(0,229,255,0.35); padding:2px 7px; border-radius:4px; font-family:'JetBrains Mono';">{energy_label}</span>
         </div>
+        {svg_a}
     </div>
     """, unsafe_allow_html=True)
 
 with m3:
+    quad_name = quadrant.split(':')[1].strip() if ':' in quadrant else quadrant
+    quad_key = quadrant.split(':')[0].strip()
     st.markdown(f"""
-    <div class="metric-card">
-        <div class="card-label">Emotional Space</div>
-        <div style="margin-top: 6px;"><span class="badge-quad {badge_class}">{quadrant.split(':')[1].strip()}</span></div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            {results["mood_description"]}
+    <div class="metric-card" style="border-top: 2px solid #c084fc;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-label">Emotional Space</span>
+            <span style="font-size:9.5px; font-weight:700; color:#c084fc; background:rgba(192,132,252,0.14); border:1px solid rgba(192,132,252,0.35); padding:2px 7px; border-radius:4px; font-family:'JetBrains Mono';">{quad_key}</span>
+        </div>
+        <div style="text-align:center; padding: 10px 0;">
+            <div class="badge-quad {badge_class}" style="font-size: 14px; font-weight: 700; padding: 6px 14px; border-radius: 8px; margin-bottom: 6px;">{quad_name}</div>
+            <div style="font-size: 11px; color: #ffffff; text-shadow: 0 0 10px rgba(168,85,247,0.7); font-family: 'JetBrains Mono'; font-weight: 700; margin: 4px 0;">
+                Coord [V: {v_score:.3f} • A: {a_score:.3f}]
+            </div>
+            <div style="font-size: 10.5px; color: #94a3b8; line-height: 1.35; max-height: 2.8em; overflow:hidden; text-overflow:ellipsis;">
+                {results["mood_description"]}
+            </div>
+        </div>
+        <div style="display:flex; gap:3px;">
+            <div style="flex:1; height:4px; border-radius:2px; background:{'#00e699' if 'Q1' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #00e699' if 'Q1' in quadrant else 'none'};"></div>
+            <div style="flex:1; height:4px; border-radius:2px; background:{'#ff3366' if 'Q2' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #ff3366' if 'Q2' in quadrant else 'none'};"></div>
+            <div style="flex:1; height:4px; border-radius:2px; background:{'#c084fc' if 'Q3' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #c084fc' if 'Q3' in quadrant else 'none'};"></div>
+            <div style="flex:1; height:4px; border-radius:2px; background:{'#00e5ff' if 'Q4' in quadrant else 'rgba(255,255,255,0.06)'}; box-shadow:{'0 0 6px #00e5ff' if 'Q4' in quadrant else 'none'};"></div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 with m4:
     centroid_str = results["acoustic_highlights"].get("Brightness (Spectral Centroid)", "2150.0 Hz")
+    try:
+        c_val = float(centroid_str.replace(" Hz", "").replace(",", "").strip())
+        warmth_tag = "DEEP SUB-BASS" if c_val < 500 else "MIDRANGE BODY" if c_val < 2000 else "BRIGHT PRESENCE"
+    except Exception:
+        c_val = 1500.0
+        warmth_tag = "MIDRANGE"
+    svg_w = render_gauge_svg(c_val, 0.0, 4000.0, "#ffb800", "wGrad", "#d97706", "#ffb800", centroid_str, "Timbral Center of Mass", "0Hz", "2kHz", "4kHz")
     st.markdown(f"""
-    <div class="metric-card">
-        <div class="card-label">Spectral Warmth</div>
-        <div class="card-number" style="color: #fbbf24; font-size: 26px;">{centroid_str}</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;">
-            Timbral Center of Mass
+    <div class="metric-card" style="border-top: 2px solid #ffb800;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-label">Spectral Warmth</span>
+            <span style="font-size:9.5px; font-weight:700; color:#ffb800; background:rgba(255,184,0,0.14); border:1px solid rgba(255,184,0,0.35); padding:2px 7px; border-radius:4px; font-family:'JetBrains Mono';">{warmth_tag}</span>
         </div>
+        {svg_w}
     </div>
     """, unsafe_allow_html=True)
 
@@ -335,84 +556,115 @@ st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
 col_radar, col_ensemble = st.columns([1.3, 1])
 
 with col_radar:
-    st.markdown("""
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-        <span style="font-size: 14px; font-weight: 700; color: #ffffff;">Russell's 2D Mood Compass (Radar Display)</span>
-        <span style="font-size: 11px; color: #64748b; font-family:'JetBrains Mono';">V: {v_score:.2f} | A: {a_score:.2f}</span>
-    </div>
-    """.format(v_score=v_score, a_score=a_score), unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="studio-panel" style="padding-bottom: 8px;">
+        <div class="panel-header">
+            <div>
+                <span class="panel-title">Russell's 2D Mood Compass</span>
+                <div class="panel-subtitle">Circumplex Model of Affect (Valence vs Arousal)</div>
+            </div>
+            <span class="chip">Target: [V: {v_score:.2f} | A: {a_score:.2f}]</span>
+        </div>
+    """, unsafe_allow_html=True)
 
     fig_compass = go.Figure()
 
-    fig_compass.add_shape(type="rect", x0=0.5, y0=0.5, x1=1.0, y1=1.0, fillcolor="rgba(16, 185, 129, 0.06)", line_width=0)
-    fig_compass.add_shape(type="rect", x0=0.0, y0=0.5, x1=0.5, y1=1.0, fillcolor="rgba(239, 68, 68, 0.06)", line_width=0)
-    fig_compass.add_shape(type="rect", x0=0.0, y0=0.0, x1=0.5, y1=0.5, fillcolor="rgba(168, 85, 247, 0.06)", line_width=0)
-    fig_compass.add_shape(type="rect", x0=0.5, y0=0.0, x1=1.0, y1=0.5, fillcolor="rgba(59, 130, 246, 0.06)", line_width=0)
+    fig_compass.add_shape(type="rect", x0=0.5, y0=0.5, x1=1.0, y1=1.0, fillcolor="rgba(0, 230, 153, 0.07)", line_width=0)
+    fig_compass.add_shape(type="rect", x0=0.0, y0=0.5, x1=0.5, y1=1.0, fillcolor="rgba(255, 51, 102, 0.07)", line_width=0)
+    fig_compass.add_shape(type="rect", x0=0.0, y0=0.0, x1=0.5, y1=0.5, fillcolor="rgba(168, 85, 247, 0.07)", line_width=0)
+    fig_compass.add_shape(type="rect", x0=0.5, y0=0.0, x1=1.0, y1=0.5, fillcolor="rgba(0, 229, 255, 0.07)", line_width=0)
 
-    for r in [0.25, 0.45]:
+    for r in [0.15, 0.30, 0.45]:
         fig_compass.add_shape(
             type="circle",
             x0=0.5 - r, y0=0.5 - r, x1=0.5 + r, y1=0.5 + r,
-            line=dict(color="rgba(255, 255, 255, 0.04)", width=1, dash="dot")
+            line=dict(color="rgba(0, 229, 255, 0.08)", width=1, dash="dot")
         )
 
-    fig_compass.add_hline(y=0.5, line_dash="solid", line_color="rgba(255, 255, 255, 0.12)", line_width=1)
-    fig_compass.add_vline(x=0.5, line_dash="solid", line_color="rgba(255, 255, 255, 0.12)", line_width=1)
+    fig_compass.add_shape(type="line", x0=0.0, y0=0.0, x1=1.0, y1=1.0, line=dict(color="rgba(255, 255, 255, 0.04)", width=1, dash="dot"))
+    fig_compass.add_shape(type="line", x0=0.0, y0=1.0, x1=1.0, y1=0.0, line=dict(color="rgba(255, 255, 255, 0.04)", width=1, dash="dot"))
 
-    fig_compass.add_annotation(x=0.82, y=0.92, text="Q1: JOYFUL", showarrow=False, font=dict(color="#34d399", size=10, family="Space Grotesk"))
-    fig_compass.add_annotation(x=0.18, y=0.92, text="Q2: TENSE", showarrow=False, font=dict(color="#f87171", size=10, family="Space Grotesk"))
-    fig_compass.add_annotation(x=0.18, y=0.08, text="Q3: MELANCHOLIC", showarrow=False, font=dict(color="#c084fc", size=10, family="Space Grotesk"))
-    fig_compass.add_annotation(x=0.82, y=0.08, text="Q4: CALM", showarrow=False, font=dict(color="#60a5fa", size=10, family="Space Grotesk"))
+    fig_compass.add_hline(y=0.5, line_dash="solid", line_color="rgba(255, 255, 255, 0.14)", line_width=1)
+    fig_compass.add_vline(x=0.5, line_dash="solid", line_color="rgba(255, 255, 255, 0.14)", line_width=1)
+    fig_compass.add_shape(type="circle", x0=0.490, y0=0.490, x1=0.510, y1=0.510, fillcolor="#00e5ff", line_color="#ffffff", line_width=1)
+
+    fig_compass.add_annotation(x=0.82, y=0.93, text="Q1 // JOYFUL (EUPHORIC)", showarrow=False, font=dict(color="#00e699", size=9.5, family="Space Grotesk"))
+    fig_compass.add_annotation(x=0.18, y=0.93, text="Q2 // TENSE (DRAMATIC)", showarrow=False, font=dict(color="#ff3366", size=9.5, family="Space Grotesk"))
+    fig_compass.add_annotation(x=0.18, y=0.07, text="Q3 // MELANCHOLIC (SOMBER)", showarrow=False, font=dict(color="#c084fc", size=9.5, family="Space Grotesk"))
+    fig_compass.add_annotation(x=0.82, y=0.07, text="Q4 // CALM (SERENE)", showarrow=False, font=dict(color="#00e5ff", size=9.5, family="Space Grotesk"))
+
+    # Dynamic text position to prevent clipping at plot boundaries
+    if v_score >= 0.65:
+        track_textpos = "middle left"
+    elif v_score <= 0.35:
+        track_textpos = "middle right"
+    elif a_score >= 0.75:
+        track_textpos = "bottom center"
+    else:
+        track_textpos = "top center"
 
     fig_compass.add_trace(go.Scatter(
         x=[v_score], y=[a_score],
         mode="markers",
-        marker=dict(size=28, color="rgba(56, 189, 248, 0.2)", symbol="circle"),
+        marker=dict(size=36, color="rgba(0, 229, 255, 0.12)", line=dict(color="rgba(0, 229, 255, 0.5)", width=1.5, dash="dot"), symbol="circle"),
         hoverinfo="skip"
     ))
     fig_compass.add_trace(go.Scatter(
         x=[v_score], y=[a_score],
         mode="markers+text",
-        marker=dict(size=14, color="#ffffff", line=dict(color="#38bdf8", width=2.5), symbol="diamond"),
-        text=["Current Track"],
-        textposition="top center",
+        marker=dict(size=14, color="#00e5ff", line=dict(color="#ffffff", width=2.5), symbol="diamond"),
+        text=[f"Current Track ({v_score:.2f}, {a_score:.2f})"],
+        textposition=track_textpos,
         textfont=dict(color="#ffffff", size=11, family="Space Grotesk"),
+        cliponaxis=False,
         name="Track Location"
     ))
 
     fig_compass.update_layout(
-        xaxis=dict(title=dict(text="Valence (Negative to Positive)", font=dict(size=11, color="#64748b")), range=[0.0, 1.0], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
-        yaxis=dict(title=dict(text="Arousal (Calm to Energetic)", font=dict(size=11, color="#64748b")), range=[0.0, 1.0], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
-        plot_bgcolor="#07090e",
-        paper_bgcolor="#090c12",
-        margin=dict(l=40, r=40, t=10, b=40),
-        height=330,
+        xaxis=dict(title=dict(text="Valence (Negative to Positive)", font=dict(size=11, color="#64748b")), range=[-0.03, 1.03], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
+        yaxis=dict(title=dict(text="Arousal (Calm to Energetic)", font=dict(size=11, color="#64748b")), range=[-0.03, 1.03], gridcolor="rgba(255,255,255,0.03)", zeroline=False),
+        plot_bgcolor="#040508",
+        paper_bgcolor="#040508",
+        margin=dict(l=45, r=55, t=15, b=40),
+        height=320,
         showlegend=False
     )
-    st.plotly_chart(fig_compass, use_container_width=True)
+    st.plotly_chart(fig_compass, width="stretch")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with col_ensemble:
-    st.markdown("""
-    <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 8px;">
-        Model Consensus Benchmark
-    </div>
+    preds = results["model_predictions"]
+    vals = list(preds.values())
+    spread = (max(vals) - min(vals)) if vals else 0.0
+
+    st.markdown(f"""
+    <div class="studio-panel" style="padding-bottom: 8px;">
+        <div class="panel-header">
+            <div>
+                <span class="panel-title">Model Consensus Benchmark</span>
+                <div class="panel-subtitle">Cross-Architecture Perception Agreement</div>
+            </div>
+            <span class="chip">Spread: ±{spread/2:.2f}</span>
+        </div>
     """, unsafe_allow_html=True)
 
-    preds = results["model_predictions"]
+    color_map = {
+        "Hybrid Fusion (Champion SOTA)": "#00e5ff",
+        "2D-CNN (Deep ConvNet)": "#b85bf8",
+        "Random Forest (Acoustic Ensemble)": "#00e699",
+        "Ridge (Linear Baseline)": "#64748b"
+    }
     models_list = []
-    color_map = {}
     for arch_name, score in preds.items():
-        clean_name = arch_name.replace(" (Phase 1 Baseline)", "").replace(" (Phase 2 Champion)", "").replace(" (Spectrogram Only)", "")
         if "Hybrid" in arch_name:
-            c = "#38bdf8"
+            display_name = "Hybrid Fusion (Champion SOTA)"
         elif "CNN" in arch_name:
-            c = "#a855f7"
+            display_name = "2D-CNN (Deep ConvNet)"
         elif "Random" in arch_name:
-            c = "#10b981"
+            display_name = "Random Forest (Acoustic Ensemble)"
         else:
-            c = "#64748b"
-        models_list.append({"Architecture": clean_name, "Valence": float(score)})
-        color_map[clean_name] = c
+            display_name = "Ridge (Linear Baseline)"
+        models_list.append({"Architecture": display_name, "Valence": float(score)})
 
     df_models = pd.DataFrame(models_list)
 
@@ -427,73 +679,90 @@ with col_ensemble:
         text_auto=".3f"
     )
     fig_bar.update_layout(
-        plot_bgcolor="#07090e",
-        paper_bgcolor="#090c12",
+        plot_bgcolor="#040508",
+        paper_bgcolor="#040508",
         font=dict(color="#cbd5e1", family="Space Grotesk"),
         xaxis=dict(gridcolor="rgba(255,255,255,0.03)", title=dict(text="Valence Score", font=dict(size=11, color="#64748b"))),
         yaxis=dict(title="", tickfont=dict(size=11)),
         margin=dict(l=10, r=20, t=10, b=40),
-        height=330,
+        height=320,
         showlegend=False
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    fig_bar.update_traces(marker_line_width=0, opacity=0.95)
+    st.plotly_chart(fig_bar, width="stretch")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
 spec_info = results.get("spectrogram")
 if spec_info and "matrix" in spec_info:
     st.markdown("""
-    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 2px;">
-        <span style="font-size: 14px; font-weight: 700; color: #ffffff;">2D Log-Mel Spectrogram (Acoustic Frequency Heatmap)</span>
-        <span style="font-size: 11px; color: #64748b; font-family:'JetBrains Mono';">128 Mel Bins • 22.05 kHz • Slaney Scale</span>
-    </div>
-    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
-        Visual time-frequency representation feeding the PyTorch 2D-CNN feature extractor.
-    </div>
+    <div class="studio-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-title">2D Log-Mel Spectrogram (Acoustic Frequency Heatmap)</span>
+                <div class="panel-subtitle">Visual time-frequency representation feeding the PyTorch 2D-CNN feature extractor.</div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <span class="chip">128 Mel Bins</span>
+                <span class="chip">22.05 kHz</span>
+                <span class="chip">Slaney Scale</span>
+            </div>
+        </div>
     """, unsafe_allow_html=True)
+
+    mel_tickvals = [0, 20, 42, 68, 98, 127]
+    mel_ticktext = ["0 Hz", "500 Hz", "1.1 kHz", "2.2 kHz", "5.0 kHz", "11.0 kHz"]
 
     matrix = np.array(spec_info["matrix"])
     n_mels, n_frames = matrix.shape
     dur = float(spec_info.get("duration_sec", 6.0))
     time_axis = np.linspace(0.0, dur, n_frames)
-    mel_axis = np.linspace(0.0, 11025.0, n_mels)
 
     fig_spec = go.Figure(data=go.Heatmap(
         z=matrix,
         x=time_axis,
-        y=mel_axis,
+        y=np.arange(n_mels),
         colorscale="Magma",
         colorbar=dict(
             title=dict(text="dB", font=dict(size=10, color="#94a3b8")),
             tickfont=dict(size=9, color="#64748b"),
             len=0.8,
-            thickness=10
+            thickness=10,
+            bgcolor="#040508",
+            outlinewidth=0
         )
     ))
     fig_spec.update_layout(
-        plot_bgcolor="#07090e",
-        paper_bgcolor="#090c12",
+        plot_bgcolor="#040508",
+        paper_bgcolor="#040508",
         font=dict(color="#cbd5e1", family="Space Grotesk"),
         xaxis=dict(title=dict(text="Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
-        yaxis=dict(title=dict(text="Frequency (Hz)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
+        yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
         margin=dict(l=40, r=20, t=10, b=40),
         height=220
     )
-    st.plotly_chart(fig_spec, use_container_width=True)
+    st.plotly_chart(fig_spec, width="stretch")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-
-st.markdown("""
-<div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
-    Dynamic Emotion Trajectory Across Timeline
-</div>
-<div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
-    3-second rolling analysis windows capturing emotional progression from intro to drop.
-</div>
-""", unsafe_allow_html=True)
+st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
 
 trajectory = results.get("trajectory", [])
 if trajectory and len(trajectory) > 1:
+    st.markdown("""
+    <div class="studio-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-title">Dynamic Emotion Trajectory Across Timeline</span>
+                <div class="panel-subtitle">3-second rolling analysis windows capturing emotional progression from intro to drop.</div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <span class="chip">Hop: 1.5s</span>
+                <span class="chip">Baseline: 0.50</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
     df_traj = pd.DataFrame(trajectory)
     min_v = float(df_traj["valence"].min())
     max_v = float(df_traj["valence"].max())
@@ -524,8 +793,8 @@ if trajectory and len(trajectory) > 1:
     )
 
     fig_traj.update_layout(
-        plot_bgcolor="#07090e",
-        paper_bgcolor="#090c12",
+        plot_bgcolor="#040508",
+        paper_bgcolor="#040508",
         font=dict(color="#cbd5e1", family="Space Grotesk"),
         yaxis=dict(title=dict(text="Valence", font=dict(size=11, color="#64748b")), range=y_range, gridcolor="rgba(255,255,255,0.03)"),
         xaxis=dict(title=dict(text="Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.03)"),
@@ -533,10 +802,196 @@ if trajectory and len(trajectory) > 1:
         margin=dict(l=40, r=40, t=15, b=40),
         showlegend=False
     )
-    st.plotly_chart(fig_traj, use_container_width=True)
+    st.plotly_chart(fig_traj, width="stretch")
+    st.markdown("</div>", unsafe_allow_html=True)
 else:
     st.info("Short audio clip: Evaluated as a single temporal frame.")
 
+st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+
+gradcam_res = results.get("gradcam")
+if gradcam_res and "raising_map" in gradcam_res:
+    st.markdown("""
+    <div class="studio-panel">
+        <div class="panel-header">
+            <div>
+                <span class="panel-title">Neural Attention & Grad-CAM Explainability</span>
+                <div class="panel-subtitle">Spatial activations in the deep 2D-CNN feature extractor showing time-frequency regions that raise or lower valence.</div>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <span class="chip">Pre-Sigmoid Attribution</span>
+                <span class="chip">Block 4 Conv Layer</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    tab_raising, tab_lowering, tab_bipolar, tab_summary = st.tabs([
+        "Valence-Raising Regions (Positive Evidence)",
+        "Valence-Lowering Regions (Negative Evidence)",
+        "Bipolar Gradient Map (Net Attribution)",
+        "Acoustic Band Attribution Telemetry"
+    ])
+
+    raising_mat = np.array(gradcam_res["raising_map"])
+    lowering_mat = np.array(gradcam_res["lowering_map"])
+    signed_mat = np.array(gradcam_res.get("signed_map", gradcam_res["raising_map"]))
+    h_mels, w_frames = raising_mat.shape
+    t_axis = np.linspace(0.0, 3.0, w_frames)
+
+    cs_raise = [
+        [0.0, "#040508"],
+        [0.2, "#3b0707"],
+        [0.5, "#dc2626"],
+        [0.8, "#ff3366"],
+        [1.0, "#fca5a5"]
+    ]
+    cs_lower = [
+        [0.0, "#040508"],
+        [0.2, "#082f49"],
+        [0.5, "#0284c7"],
+        [0.8, "#00e5ff"],
+        [1.0, "#bae6fd"]
+    ]
+    cs_bipolar = [
+        [0.0, "#00e5ff"],
+        [0.35, "#082f49"],
+        [0.5, "#040508"],
+        [0.65, "#450a0a"],
+        [1.0, "#ff3366"]
+    ]
+
+    with tab_raising:
+        fig_raise = go.Figure(data=go.Heatmap(
+            z=raising_mat,
+            x=t_axis,
+            y=np.arange(h_mels),
+            colorscale=cs_raise,
+            colorbar=dict(
+                title=dict(text="Importance", font=dict(size=10, color="#ff3366")),
+                tickfont=dict(size=9, color="#64748b"),
+                len=0.8,
+                thickness=10,
+                bgcolor="#040508",
+                outlinewidth=0
+            )
+        ))
+        fig_raise.update_layout(
+            plot_bgcolor="#040508",
+            paper_bgcolor="#040508",
+            font=dict(color="#cbd5e1", family="Space Grotesk"),
+            xaxis=dict(title=dict(text="Window Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
+            yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
+            margin=dict(l=40, r=20, t=10, b=40),
+            height=220
+        )
+        st.plotly_chart(fig_raise, width="stretch")
+
+    with tab_lowering:
+        fig_lower = go.Figure(data=go.Heatmap(
+            z=lowering_mat,
+            x=t_axis,
+            y=np.arange(h_mels),
+            colorscale=cs_lower,
+            colorbar=dict(
+                title=dict(text="Importance", font=dict(size=10, color="#00e5ff")),
+                tickfont=dict(size=9, color="#64748b"),
+                len=0.8,
+                thickness=10,
+                bgcolor="#040508",
+                outlinewidth=0
+            )
+        ))
+        fig_lower.update_layout(
+            plot_bgcolor="#040508",
+            paper_bgcolor="#040508",
+            font=dict(color="#cbd5e1", family="Space Grotesk"),
+            xaxis=dict(title=dict(text="Window Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
+            yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
+            margin=dict(l=40, r=20, t=10, b=40),
+            height=220
+        )
+        st.plotly_chart(fig_lower, width="stretch")
+
+    with tab_bipolar:
+        max_abs = float(max(abs(signed_mat.min()), abs(signed_mat.max()), 1e-6))
+        fig_bipolar = go.Figure(data=go.Heatmap(
+            z=signed_mat,
+            x=t_axis,
+            y=np.arange(h_mels),
+            colorscale=cs_bipolar,
+            zmin=-max_abs,
+            zmax=max_abs,
+            colorbar=dict(
+                title=dict(text="Net Shift", font=dict(size=10, color="#94a3b8")),
+                tickfont=dict(size=9, color="#64748b"),
+                len=0.8,
+                thickness=10,
+                bgcolor="#040508",
+                outlinewidth=0
+            )
+        ))
+        fig_bipolar.update_layout(
+            plot_bgcolor="#040508",
+            paper_bgcolor="#040508",
+            font=dict(color="#cbd5e1", family="Space Grotesk"),
+            xaxis=dict(title=dict(text="Window Timeline (Seconds)", font=dict(size=11, color="#64748b")), gridcolor="rgba(255,255,255,0.02)"),
+            yaxis=dict(title=dict(text="Frequency (Hz, Mel Scale)", font=dict(size=11, color="#64748b")), tickvals=mel_tickvals, ticktext=mel_ticktext, gridcolor="rgba(255,255,255,0.02)"),
+            margin=dict(l=40, r=20, t=10, b=40),
+            height=220
+        )
+        st.plotly_chart(fig_bipolar, width="stretch")
+
+    with tab_summary:
+        summary_info = gradcam_res.get("summary", {})
+        summary_text = summary_info.get("text", "Grad-CAM sensitivity analysis evaluated.")
+        raising_bands = summary_info.get("raising_band_shares", {})
+        lowering_bands = summary_info.get("lowering_band_shares", {})
+
+        st.markdown(f"""
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
+            <div style="font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;">Diagnostic Inference Summary</div>
+            <div style="font-size: 13px; color: #e2e8f0; line-height: 1.5; font-family:'JetBrains Mono';">{summary_text}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_b1, col_b2 = st.columns(2)
+        with col_b1:
+            st.markdown("<div style='font-size:12px; font-weight:700; color:#f87171; margin-bottom:8px;'>Positive Valence Band Distribution</div>", unsafe_allow_html=True)
+            for band_name, share in raising_bands.items():
+                pct = share * 100
+                st.markdown(f"""
+                <div style="display:flex; justify-content:space-between; font-size:11.5px; padding:2px 0;">
+                    <span style="color:#94a3b8;">{band_name}</span>
+                    <span style="color:#ffffff; font-family:'JetBrains Mono'; font-weight:600;">{pct:.1f}%</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); height: 3px; border-radius: 2px; margin-bottom: 7px; overflow: hidden;">
+                    <div style="background: #f87171; width: {pct}%; height: 100%;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        with col_b2:
+            st.markdown("<div style='font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:8px;'>Negative Valence Band Distribution</div>", unsafe_allow_html=True)
+            for band_name, share in lowering_bands.items():
+                pct = share * 100
+                st.markdown(f"""
+                <div style="display:flex; justify-content:space-between; font-size:11.5px; padding:2px 0;">
+                    <span style="color:#94a3b8;">{band_name}</span>
+                    <span style="color:#ffffff; font-family:'JetBrains Mono'; font-weight:600;">{pct:.1f}%</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); height: 3px; border-radius: 2px; margin-bottom: 7px; overflow: hidden;">
+                    <div style="background: #38bdf8; width: {pct}%; height: 100%;"></div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div style="margin-top: 10px; font-size: 11px; color: #64748b; font-style: italic;">
+            Validation Notice: Attributions describe model sensitivity in time and frequency. They do not identify individual instruments or causes of perceived human emotion.
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
 with st.expander("View Detailed Acoustic Physics DNA (34 Descriptors)"):
     st.markdown("##### Core Acoustic Driver Highlights")
@@ -553,7 +1008,7 @@ with st.expander("View Detailed Acoustic Physics DNA (34 Descriptors)"):
     st.markdown("##### Extracted 34 Physics Features (Full Vector)")
     df_features = pd.DataFrame([results["features"]]).T.reset_index()
     df_features.columns = ["Acoustic Feature Name", "Value"]
-    st.dataframe(df_features, height=220, use_container_width=True)
+    st.dataframe(df_features, height=220, width="stretch")
 
 st.markdown("""
 <div style="text-align: center; color: #475569; font-size: 11.5px; margin-top: 40px; padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.05);">

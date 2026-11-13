@@ -18,6 +18,7 @@ Shared Contract (Section 5.2):
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib_cache"
 
 import sys
 import json
@@ -288,6 +289,26 @@ class HarmoniXOrchestrator:
             except Exception as e:
                 logger.warning(f"Failed to compute deep learning prediction: {e}")
 
+        gradcam_payload = None
+        if self.hybrid_model is not None and self.scaler_mean is not None:
+            try:
+                from src.deep_explainability import explain
+                explain_res = explain(
+                    self.hybrid_model,
+                    windows_tensor[0:1],
+                    scaled_batch[0:1],
+                    methods=("gradcam",)
+                )
+                gradcam_payload = {
+                    "signed_map": explain_res["maps"]["gradcam_signed"][0].tolist(),
+                    "raising_map": explain_res["maps"]["gradcam_raising"][0].tolist(),
+                    "lowering_map": explain_res["maps"]["gradcam_lowering"][0].tolist(),
+                    "summary": explain_res["summaries"][0] if explain_res.get("summaries") else {},
+                    "model_name": "Hybrid Fusion (Phase 2 Champion)"
+                }
+            except Exception as e:
+                logger.warning(f"Grad-CAM explanation failed: {e}")
+
         for name, pipe in self.models.items():
             pred = float(np.clip(pipe.predict(X_full)[0], 0.0, 1.0))
             label = f"{name} (Phase 1 Baseline)"
@@ -353,6 +374,7 @@ class HarmoniXOrchestrator:
                 "fmin": FMIN,
                 "fmax": FMAX,
             },
+            "gradcam": gradcam_payload,
             "features": features_dict
         }
 
