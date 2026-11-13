@@ -1060,12 +1060,12 @@ with st.expander("View Detailed Acoustic Physics DNA (34 Descriptors)"):
     st.dataframe(df_features, height=220, width="stretch")
 
 st.markdown("""
-<div style="text-align: center; color: #475569; font-size: 11.5px; margin-top: 40px; padding: 24px 0 16px 0; border-top: 1px solid rgba(255,255,255,0.04);">
-    <div style="font-weight: 700; color: #94a3b8; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px;">
-        HarmoniX Neural Audio Intelligence
+<div style="text-align: center; color: #475569; font-size: 11.5px; margin-top: 40px; padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.04);">
+    <div style="font-weight: 700; color: #94a3b8; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px;">
+        HarmoniX Audio Studio
     </div>
-    <div style="color: #64748b; font-size: 11px; max-width: 680px; margin: 0 auto; line-height: 1.6;">
-        Bridging acoustic physics and deep neural perception to decode the affective geometry of music across diverse cultures. Powered by PyTorch 2D-CNN, hybrid multimodal fusion, and explainable AI attribution.
+    <div style="color: #64748b; font-size: 11px;">
+        Multimodal music emotion perception powered by acoustic physics and deep neural intelligence.
     </div>
 </div>
 """, unsafe_allow_html=True)
