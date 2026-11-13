@@ -1,0 +1,9 @@
+feature,label,mean_abs_shapley,mean_signed_shapley
+spectral_bandwidth_mean,Spectral bandwidth,0.018138763463449854,-0.005309032735133926
+mfcc_1_mean,MFCC 1,0.017251465645810916,-0.006181813159868833
+spectral_contrast_mean,Spectral contrast,0.0156847068300796,-0.0020374995382532253
+spectral_centroid_mean,Spectral centroid,0.013688130535540133,0.004300747745330372
+spectral_flatness_mean,Spectral flatness,0.012505176383114996,-0.0028772848194080687
+zcr_mean,Zero-crossing rate,0.00933764410988679,-0.002492780379123158
+sensory_dissonance_estimate,Sensory dissonance (est.),0.006179447187554269,0.0019444478445109876
+spectral_rolloff_mean,Spectral roll-off,0.00286430181657511,0.0008501568547790012

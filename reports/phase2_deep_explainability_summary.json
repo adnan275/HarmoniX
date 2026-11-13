@@ -1,0 +1,577 @@
+{
+  "split_explained": "val",
+  "device": "cpu",
+  "seed": 42,
+  "torch_version": "2.11.0",
+  "window_cache_signature": "b33c7d9619b8fddf",
+  "train_command": "python src/train_cnn.py --lambda-grid 0.05 (unmodified; seed 42; MPS)",
+  "caveat": "Attributions describe where the model is sensitive in time and frequency. They do not identify instruments or semantic content, and they are not causal explanations of perceived valence.",
+  "models": {
+    "cnn_only": {
+      "checkpoint": "cnn_only_best.pt",
+      "model_type": "cnn_only",
+      "checkpoint_sha256": "50378c399e7b9df6f29279fb2a204072b9958199a37d03d3e296c72fc0bdbe7a",
+      "checkpoint_version": "2.0.0",
+      "n_val_windows": 3110,
+      "skill_on_validation": {
+        "window_r2": 0.4795476198196411,
+        "window_pearson": 0.6981173106958073,
+        "song_r2": 0.5647943019866943,
+        "song_pearson": 0.7559325171822326,
+        "n_windows": 3110,
+        "n_songs": 115
+      },
+      "gradcam_layer_agreement_spearman": 0.6456502160649416,
+      "completeness": {
+        "ig": {
+          "mean_abs_gap": 0.0014357941690832376,
+          "median_relative_gap": 0.011185949668288231,
+          "fraction_within_tolerance": 0.8866666666666667,
+          "mean_abs_delta": 0.11734199523925781,
+          "satisfied": true
+        },
+        "deeplift": {
+          "mean_abs_gap": 0.11527126282453537,
+          "median_relative_gap": 1.003526210784912,
+          "fraction_within_tolerance": 0.0,
+          "mean_abs_delta": 0.11734199523925781,
+          "satisfied": false
+        }
+      },
+      "deeplift_assumption_diagnostic": [
+        {
+          "variant": "deployed model",
+          "median_relative_gap": 1.003526210784912,
+          "fraction_within_tolerance": 0.0
+        },
+        {
+          "variant": "LayerNorm -> identity",
+          "median_relative_gap": 0.1787395179271698,
+          "fraction_within_tolerance": 0.12
+        },
+        {
+          "variant": "AdaptiveMaxPool -> average pool",
+          "median_relative_gap": 0.628821849822998,
+          "fraction_within_tolerance": 0.0
+        },
+        {
+          "variant": "both replaced",
+          "median_relative_gap": 0.014003940857946873,
+          "fraction_within_tolerance": 0.82
+        }
+      ],
+      "ig_vs_gradcam_spearman_16x15": 0.03207825369964019,
+      "randomization": [
+        {
+          "stage": "trained",
+          "n_layers_randomised": 0,
+          "spearman_signed_mean": 1.0,
+          "spearman_signed_sd": 0.0,
+          "spearman_abs_mean": 1.0,
+          "spearman_abs_sd": 0.0
+        },
+        {
+          "stage": "head",
+          "n_layers_randomised": 1,
+          "spearman_signed_mean": 0.7120803249882938,
+          "spearman_signed_sd": 0.30660764971373294,
+          "spearman_abs_mean": 0.6045265745506938,
+          "spearman_abs_sd": 0.3140010807572659
+        },
+        {
+          "stage": "+ embedding",
+          "n_layers_randomised": 2,
+          "spearman_signed_mean": 0.272517197091888,
+          "spearman_signed_sd": 0.2352362358960941,
+          "spearman_abs_mean": 0.24971433563683884,
+          "spearman_abs_sd": 0.1863364959266686
+        },
+        {
+          "stage": "+ block 4",
+          "n_layers_randomised": 3,
+          "spearman_signed_mean": -0.2665234930641234,
+          "spearman_signed_sd": 0.2079077171794323,
+          "spearman_abs_mean": 0.01616362492917357,
+          "spearman_abs_sd": 0.15021919210378523
+        },
+        {
+          "stage": "+ block 3",
+          "n_layers_randomised": 4,
+          "spearman_signed_mean": -0.06474048648712051,
+          "spearman_signed_sd": 0.18193179257701717,
+          "spearman_abs_mean": -0.03707071904366951,
+          "spearman_abs_sd": 0.13211563038319024
+        },
+        {
+          "stage": "+ block 2",
+          "n_layers_randomised": 5,
+          "spearman_signed_mean": 0.03989292564171391,
+          "spearman_signed_sd": 0.2161195969155614,
+          "spearman_abs_mean": 0.02991296977381299,
+          "spearman_abs_sd": 0.14760551391357024
+        },
+        {
+          "stage": "+ block 1",
+          "n_layers_randomised": 6,
+          "spearman_signed_mean": 0.3370581915803328,
+          "spearman_signed_sd": 0.2681185950671077,
+          "spearman_abs_mean": -0.06111327598063656,
+          "spearman_abs_sd": 0.21435611487234618
+        }
+      ],
+      "deletion": [
+        {
+          "fraction": 0.05,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.003332332242280245,
+          "delta_remove_lowering": 0.0005883830599486828,
+          "delta_random_shifted": -0.005790145602077246,
+          "p_raising_vs_random_song_level": 0.2268555079343877,
+          "p_lowering_vs_random_song_level": 0.002010202391822768
+        },
+        {
+          "fraction": 0.05,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": 0.004596889950335026,
+          "delta_remove_lowering": 0.02487609162926674,
+          "delta_random_shifted": 0.0060949488542973995,
+          "p_raising_vs_random_song_level": 0.015443240262030693,
+          "p_lowering_vs_random_song_level": 1.3832719031089986e-09
+        },
+        {
+          "fraction": 0.1,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.010817473754286766,
+          "delta_remove_lowering": -0.004109170287847519,
+          "delta_random_shifted": -0.00771839777007699,
+          "p_raising_vs_random_song_level": 0.01843612632319295,
+          "p_lowering_vs_random_song_level": 0.03906743812509063
+        },
+        {
+          "fraction": 0.1,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": 0.00111380813177675,
+          "delta_remove_lowering": 0.03690424561500549,
+          "delta_random_shifted": 0.011218361556529999,
+          "p_raising_vs_random_song_level": 0.0002318230660541016,
+          "p_lowering_vs_random_song_level": 5.158994085598087e-11
+        },
+        {
+          "fraction": 0.2,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.02272605523467064,
+          "delta_remove_lowering": -0.014916260726749897,
+          "delta_random_shifted": -0.015411682426929474,
+          "p_raising_vs_random_song_level": 0.0011594318703741049,
+          "p_lowering_vs_random_song_level": 0.31344256290453776
+        },
+        {
+          "fraction": 0.2,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.0060808113776147366,
+          "delta_remove_lowering": 0.055828336626291275,
+          "delta_random_shifted": 0.02181498147547245,
+          "p_raising_vs_random_song_level": 1.4606244031688988e-09,
+          "p_lowering_vs_random_song_level": 6.2461127335242144e-12
+        },
+        {
+          "fraction": 0.3,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.030704893171787262,
+          "delta_remove_lowering": -0.02965790405869484,
+          "delta_random_shifted": -0.021619224920868874,
+          "p_raising_vs_random_song_level": 0.000983781265238212,
+          "p_lowering_vs_random_song_level": 0.9324155046443156
+        },
+        {
+          "fraction": 0.3,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.008785202167928219,
+          "delta_remove_lowering": 0.06508779525756836,
+          "delta_random_shifted": 0.030417155474424362,
+          "p_raising_vs_random_song_level": 1.3836768769070549e-11,
+          "p_lowering_vs_random_song_level": 4.1950320549095666e-11
+        },
+        {
+          "fraction": 0.5,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.037457164376974106,
+          "delta_remove_lowering": -0.06765004247426987,
+          "delta_random_shifted": -0.0353732630610466,
+          "p_raising_vs_random_song_level": 0.6559297947737545,
+          "p_lowering_vs_random_song_level": 0.9999818423952695
+        },
+        {
+          "fraction": 0.5,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": 0.004785345401614904,
+          "delta_remove_lowering": 0.07963330298662186,
+          "delta_random_shifted": 0.05030819773674011,
+          "p_raising_vs_random_song_level": 1.609927653136228e-11,
+          "p_lowering_vs_random_song_level": 4.1553583810148375e-09
+        }
+      ],
+      "consistency": {
+        "n_neighbour_pairs": 2985,
+        "profile_corr_neighbour_mean": 0.8075649219014955,
+        "profile_corr_different_song_mean": 0.3010002375294214,
+        "spearman_vs_mean_map_mean": 0.46814573225449757,
+        "spearman_vs_mean_map_sd": 0.27705312315230296
+      },
+      "window_diagnostics": [
+        "Predicted valence 0.65. Valence-raising evidence is concentrated in the mid (0.5-2 kHz) band (71% of its mass) and during 1-2 s (38%). Valence-lowering evidence is concentrated in the high (4-11 kHz) band (71% of its mass) and during 0-1 s (42%). This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.60. Valence-raising evidence is concentrated in the bass (<250 Hz) band (45% of its mass) and during 1-2 s (58%). Valence-lowering evidence is concentrated in the high (4-11 kHz) band (39% of its mass) and during 0-1 s (42%). This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.60. Valence-raising evidence is concentrated in the mid (0.5-2 kHz) band (56% of its mass) and during 1-2 s (41%). Valence-lowering evidence is concentrated in the high (4-11 kHz) band (65% of its mass) and during 1-2 s (49%). This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.51. Valence-raising evidence is concentrated in the low-mid (250-500 Hz) band (37% of its mass) and during 1-2 s (68%). Valence-lowering evidence is concentrated in the high (4-11 kHz) band (43% of its mass) and during 2-3 s (42%). This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.71. Valence-raising evidence is concentrated in the mid (0.5-2 kHz) band (50% of its mass) and during 1-2 s (38%). Valence-lowering evidence is concentrated in the high (4-11 kHz) band (88% of its mass) and during 2-3 s (51%). This describes model sensitivity, not instruments or causes."
+      ]
+    },
+    "hybrid_fusion": {
+      "checkpoint": "hybrid_fusion_best.pt",
+      "model_type": "hybrid_fusion",
+      "checkpoint_sha256": "bd6fa13c2e49fc3c17991135c79af7f7c9fb6d0b95143edec68b9d2ef9d2ccfb",
+      "checkpoint_version": "2.0.0",
+      "n_val_windows": 3110,
+      "skill_on_validation": {
+        "window_r2": 0.4472694993019104,
+        "window_pearson": 0.6778779263371252,
+        "song_r2": 0.5230872631072998,
+        "song_pearson": 0.734704912947605,
+        "n_windows": 3110,
+        "n_songs": 115
+      },
+      "gradcam_layer_agreement_spearman": 0.8234181699177947,
+      "completeness": {
+        "ig": {
+          "mean_abs_gap": 0.001108671771362424,
+          "median_relative_gap": 0.010497348383069038,
+          "fraction_within_tolerance": 0.9466666666666667,
+          "mean_abs_delta": 0.11054901033639908,
+          "satisfied": true
+        },
+        "deeplift": {
+          "mean_abs_gap": 0.06931650638580322,
+          "median_relative_gap": 0.5917513370513916,
+          "fraction_within_tolerance": 0.04666666666666667,
+          "mean_abs_delta": 0.11054901033639908,
+          "satisfied": false
+        }
+      },
+      "deeplift_assumption_diagnostic": [
+        {
+          "variant": "deployed model",
+          "median_relative_gap": 0.5917513370513916,
+          "fraction_within_tolerance": 0.04666666666666667
+        },
+        {
+          "variant": "LayerNorm -> identity",
+          "median_relative_gap": 0.1396077573299408,
+          "fraction_within_tolerance": 0.16666666666666666
+        },
+        {
+          "variant": "AdaptiveMaxPool -> average pool",
+          "median_relative_gap": 0.635233998298645,
+          "fraction_within_tolerance": 0.006666666666666667
+        },
+        {
+          "variant": "both replaced",
+          "median_relative_gap": 0.053211625665426254,
+          "fraction_within_tolerance": 0.4866666666666667
+        }
+      ],
+      "ig_vs_gradcam_spearman_16x15": 0.09550898604727405,
+      "randomization": [
+        {
+          "stage": "trained",
+          "n_layers_randomised": 0,
+          "spearman_signed_mean": 1.0,
+          "spearman_signed_sd": 0.0,
+          "spearman_abs_mean": 1.0,
+          "spearman_abs_sd": 0.0
+        },
+        {
+          "stage": "head",
+          "n_layers_randomised": 1,
+          "spearman_signed_mean": 0.08110735889855687,
+          "spearman_signed_sd": 0.6458870217226165,
+          "spearman_abs_mean": 0.48968601534633127,
+          "spearman_abs_sd": 0.2982024757818882
+        },
+        {
+          "stage": "+ embedding",
+          "n_layers_randomised": 2,
+          "spearman_signed_mean": -0.26755718972197545,
+          "spearman_signed_sd": 0.33030647904779104,
+          "spearman_abs_mean": 0.2472497081385844,
+          "spearman_abs_sd": 0.24006575866129518
+        },
+        {
+          "stage": "+ block 4",
+          "n_layers_randomised": 3,
+          "spearman_signed_mean": 0.04229876967346028,
+          "spearman_signed_sd": 0.20844186193528003,
+          "spearman_abs_mean": 0.05224733248281429,
+          "spearman_abs_sd": 0.18328057608476794
+        },
+        {
+          "stage": "+ block 3",
+          "n_layers_randomised": 4,
+          "spearman_signed_mean": 0.02304223086123989,
+          "spearman_signed_sd": 0.16480663802526835,
+          "spearman_abs_mean": 0.12837910469361227,
+          "spearman_abs_sd": 0.14760807626862676
+        },
+        {
+          "stage": "+ block 2",
+          "n_layers_randomised": 5,
+          "spearman_signed_mean": -0.12498513113548368,
+          "spearman_signed_sd": 0.17884642270472217,
+          "spearman_abs_mean": 0.012997344359305574,
+          "spearman_abs_sd": 0.14319128525078573
+        },
+        {
+          "stage": "+ block 1",
+          "n_layers_randomised": 6,
+          "spearman_signed_mean": -0.010416263483960193,
+          "spearman_signed_sd": 0.2378257050797688,
+          "spearman_abs_mean": 0.10347432313835556,
+          "spearman_abs_sd": 0.20125321257124848
+        }
+      ],
+      "deletion": [
+        {
+          "fraction": 0.05,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.014810629189014435,
+          "delta_remove_lowering": 0.012617486529052258,
+          "delta_random_shifted": -0.0012100280728191137,
+          "p_raising_vs_random_song_level": 2.928889206966073e-08,
+          "p_lowering_vs_random_song_level": 3.544746317141442e-09
+        },
+        {
+          "fraction": 0.05,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.017826594412326813,
+          "delta_remove_lowering": 0.0057374550960958,
+          "delta_random_shifted": 0.00126253766939044,
+          "p_raising_vs_random_song_level": 7.0226094480113576e-09,
+          "p_lowering_vs_random_song_level": 0.012155213290749716
+        },
+        {
+          "fraction": 0.1,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.019691413268446922,
+          "delta_remove_lowering": 0.015565919689834118,
+          "delta_random_shifted": -0.0016576065681874752,
+          "p_raising_vs_random_song_level": 5.592929940288945e-06,
+          "p_lowering_vs_random_song_level": 3.0911595214346507e-10
+        },
+        {
+          "fraction": 0.1,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.02963453345000744,
+          "delta_remove_lowering": 0.00461926544085145,
+          "delta_random_shifted": -0.0010403211927041411,
+          "p_raising_vs_random_song_level": 5.126054134650232e-10,
+          "p_lowering_vs_random_song_level": 0.13435790458021002
+        },
+        {
+          "fraction": 0.2,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.025118278339505196,
+          "delta_remove_lowering": 0.017520630732178688,
+          "delta_random_shifted": -0.0012781023979187012,
+          "p_raising_vs_random_song_level": 2.8752967624564773e-07,
+          "p_lowering_vs_random_song_level": 5.967990234262166e-07
+        },
+        {
+          "fraction": 0.2,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.035897329449653625,
+          "delta_remove_lowering": 0.004851758945733309,
+          "delta_random_shifted": -0.0019568672869354486,
+          "p_raising_vs_random_song_level": 8.643955238347011e-09,
+          "p_lowering_vs_random_song_level": 0.203405519817288
+        },
+        {
+          "fraction": 0.3,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.033700309693813324,
+          "delta_remove_lowering": 0.020192714408040047,
+          "delta_random_shifted": -0.00458401907235384,
+          "p_raising_vs_random_song_level": 1.1187250748462863e-08,
+          "p_lowering_vs_random_song_level": 9.95905531131234e-08
+        },
+        {
+          "fraction": 0.3,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.04009900614619255,
+          "delta_remove_lowering": 0.006051961798220873,
+          "delta_random_shifted": -0.0024586126673966646,
+          "p_raising_vs_random_song_level": 4.8677565054285244e-09,
+          "p_lowering_vs_random_song_level": 0.09118825247798285
+        },
+        {
+          "fraction": 0.5,
+          "mask_baseline": "silence",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.04787132889032364,
+          "delta_remove_lowering": 0.025378460064530373,
+          "delta_random_shifted": -0.007725533563643694,
+          "p_raising_vs_random_song_level": 2.018276853324611e-10,
+          "p_lowering_vs_random_song_level": 1.4723236862013711e-10
+        },
+        {
+          "fraction": 0.5,
+          "mask_baseline": "mean",
+          "n_windows": 150,
+          "n_songs": 84,
+          "delta_remove_raising": -0.05098890885710716,
+          "delta_remove_lowering": 0.017651913687586784,
+          "delta_random_shifted": -0.01180265937000513,
+          "p_raising_vs_random_song_level": 1.6728945980574735e-09,
+          "p_lowering_vs_random_song_level": 1.3047475091399262e-08
+        }
+      ],
+      "consistency": {
+        "n_neighbour_pairs": 2995,
+        "profile_corr_neighbour_mean": 0.7281269659567131,
+        "profile_corr_different_song_mean": 0.2825993999910323,
+        "spearman_vs_mean_map_mean": 0.35062948812830735,
+        "spearman_vs_mean_map_sd": 0.16075982684996534
+      },
+      "shapley": {
+        "n_windows": 150,
+        "max_efficiency_error": 5.551115123125783e-17,
+        "max_consistency_error": 5.960464477539063e-08,
+        "background_windows": 32,
+        "ranking": [
+          {
+            "feature": "spectral_bandwidth_mean",
+            "mean_abs_shapley": 0.018138763463449854,
+            "mean_signed_shapley": -0.005309032735133926
+          },
+          {
+            "feature": "mfcc_1_mean",
+            "mean_abs_shapley": 0.017251465645810916,
+            "mean_signed_shapley": -0.006181813159868833
+          },
+          {
+            "feature": "spectral_contrast_mean",
+            "mean_abs_shapley": 0.0156847068300796,
+            "mean_signed_shapley": -0.0020374995382532253
+          },
+          {
+            "feature": "spectral_centroid_mean",
+            "mean_abs_shapley": 0.013688130535540133,
+            "mean_signed_shapley": 0.004300747745330372
+          },
+          {
+            "feature": "spectral_flatness_mean",
+            "mean_abs_shapley": 0.012505176383114996,
+            "mean_signed_shapley": -0.0028772848194080687
+          },
+          {
+            "feature": "zcr_mean",
+            "mean_abs_shapley": 0.00933764410988679,
+            "mean_signed_shapley": -0.002492780379123158
+          },
+          {
+            "feature": "sensory_dissonance_estimate",
+            "mean_abs_shapley": 0.006179447187554269,
+            "mean_signed_shapley": 0.0019444478445109876
+          },
+          {
+            "feature": "spectral_rolloff_mean",
+            "mean_abs_shapley": 0.00286430181657511,
+            "mean_signed_shapley": 0.0008501568547790012
+          }
+        ],
+        "most_anticorrelated_pairs": [
+          [
+            "spectral_centroid_mean",
+            "spectral_bandwidth_mean",
+            -0.581105994286377
+          ],
+          [
+            "mfcc_1_mean",
+            "spectral_rolloff_mean",
+            -0.41996771101280683
+          ],
+          [
+            "zcr_mean",
+            "spectral_centroid_mean",
+            -0.4087309509366602
+          ]
+        ],
+        "most_correlated_pairs": [
+          [
+            "spectral_centroid_mean",
+            "spectral_rolloff_mean",
+            0.5584752226416537
+          ],
+          [
+            "mfcc_1_mean",
+            "spectral_bandwidth_mean",
+            0.5506784346794419
+          ],
+          [
+            "mfcc_1_mean",
+            "zcr_mean",
+            0.49005160308003765
+          ]
+        ]
+      },
+      "modality_split": {
+        "mean_abs_spectrogram": 0.0761212706565857,
+        "mean_abs_acoustic": 0.0602838397026062,
+        "corr_spectrogram_with_deviation": 0.8331390418456308,
+        "corr_acoustic_with_deviation": 0.6083651793104241
+      },
+      "window_diagnostics": [
+        "Predicted valence 0.63. Valence-raising evidence is concentrated in the mid (0.5-2 kHz) band (47% of its mass) and during 1-2 s (41%). Valence-lowering evidence is concentrated in the mid (0.5-2 kHz) band (44% of its mass) and during 2-3 s (48%). Largest acoustic-feature contributions (Shapley, valence units): Spectral centroid -0.022, Spectral contrast -0.019. This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.71. Valence-raising evidence is concentrated in the low-mid (250-500 Hz) band (61% of its mass) and during 1-2 s (65%). Valence-lowering evidence is concentrated in the upper-mid (2-4 kHz) band (37% of its mass) and during 0-1 s (47%). Largest acoustic-feature contributions (Shapley, valence units): Spectral flatness +0.041, MFCC 1 -0.020. This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.67. Valence-raising evidence is concentrated in the low-mid (250-500 Hz) band (66% of its mass) and during 1-2 s (58%). Valence-lowering evidence is concentrated in the high (4-11 kHz) band (50% of its mass) and during 1-2 s (45%). Largest acoustic-feature contributions (Shapley, valence units): Sensory dissonance (est.) +0.015, Spectral contrast -0.012. This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.47. Valence-raising evidence is concentrated in the low-mid (250-500 Hz) band (44% of its mass) and during 1-2 s (51%). Valence-lowering evidence is concentrated in the mid (0.5-2 kHz) band (42% of its mass) and during 1-2 s (39%). Largest acoustic-feature contributions (Shapley, valence units): Spectral bandwidth -0.062, MFCC 1 -0.039. This describes model sensitivity, not instruments or causes.",
+        "Predicted valence 0.71. Valence-raising evidence is concentrated in the bass (<250 Hz) band (51% of its mass) and during 2-3 s (43%). Valence-lowering evidence is concentrated in the mid (0.5-2 kHz) band (29% of its mass) and during 0-1 s (37%). Largest acoustic-feature contributions (Shapley, valence units): Spectral contrast +0.022, MFCC 1 +0.013. This describes model sensitivity, not instruments or causes."
+      ]
+    }
+  }
+}

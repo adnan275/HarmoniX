@@ -394,3 +394,26 @@ Validation checks included:
 The spectrogram configuration is centralized in `spectrogram_engine.py`. Training and inference should use the same sample rate, FFT configuration, Mel scale, window function, log-compression settings, and windowing policy to ensure consistent CNN inputs.
 
 Run the modules from the project root as part of the Phase 2 preprocessing pipeline.
+## 🔍 Phase 2 — Explainable AI & Spectrogram Heatmaps
+
+`src/deep_explainability.py` explains the Phase 2 spectrogram models (2D-CNN and hybrid fusion) on the **validation split only**; the test split is never loaded. Shared contract: `explain(model, input_window) -> attribution map and metadata`.
+
+**Methods**
+
+- **Grad-CAM** on the last conv block, on the pre-sigmoid output. Valence is a regression target, so each window gets a signed map: regions that *raise* and regions that *lower* the predicted valence, overlaid on the log-Mel spectrogram with Hz and seconds on the axes.
+- **Integrated Gradients** (silence baseline, 256 steps) for the neural branch, with a completeness check (sum of attributions = f(x) − f(baseline)).
+- **DeepLIFT**, checked for its assumptions first. They are **not** met by this architecture (LayerNorm and AdaptiveMaxPool2d are treated as linear, completeness gap 100% / 59%), so it is shown for comparison only.
+- **Exact Shapley values** for the 8 tabular features of the hybrid model (256 coalitions), and a spectrogram-vs-descriptors **modality split**.
+- **Validation of the explanations:** weight-randomisation test, deletion faithfulness against shape-matched random masks, consistency across neighbouring windows.
+
+**Run** (needs the Phase 2 checkpoints from `src/train_cnn.py`):
+
+```bash
+python src/deep_explainability.py
+```
+
+Use `--checkpoint-dir` if the `.pt` files are elsewhere. Outputs: `reports/figures_phase2/` (16 figures), `reports/phase2_*` tables, and `reports/phase2_deep_explainability_summary.json`.
+
+**Findings and caveats** are written up in [`reports/phase2_interpretability_section.md`](reports/phase2_interpretability_section.md) (paper/presentation section). In short: the randomisation test passes for both models; deletion faithfulness is strong for the hybrid model and baseline-dependent for the CNN-only model; Integrated Gradients and Grad-CAM agree only weakly, so no single heatmap should be read as "the" explanation. Heatmaps show where the *model* is sensitive in time and frequency. They do not identify instruments and are not causal explanations of perceived valence.
+
+> The checkpoints used for the committed figures were retrained locally on the real 767-song manifest (536 / 115 / 116 songs; CNN-only validation song-level R² 0.565, hybrid 0.523) and are kept in the git-ignored `models/retrained_real/`; their SHA-256 hashes and the training command are in `reports/phase2_deep_explainability_summary.json`. The Phase 2 metrics committed in `models/phase2_model_metrics.json` come from a 60-song run (42 / 9 / 9 songs, scaler fitted on 126 windows, the same size as the synthetic sample set) and should be regenerated from the final shared checkpoint.
