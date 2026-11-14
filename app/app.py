@@ -55,16 +55,58 @@ st.markdown("""
         max-width: 1280px !important;
     }
 
-    /* Hide Streamlit Header */
-    header[data-testid="stHeader"], #MainMenu, footer {
+    /* Header & Sidebar Controls */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        height: 3rem !important;
+        z-index: 99999 !important;
+    }
+
+    /* Hide only Streamlit deployment/settings toolbar & rainbow stripe */
+    [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {
         visibility: hidden !important;
+        display: none !important;
         height: 0 !important;
+    }
+
+    /* Prominent Sidebar Expand Button when collapsed */
+    [data-testid="stSidebarCollapsedControl"] {
+        visibility: visible !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #090d16 !important;
+        border: 1px solid rgba(0, 229, 255, 0.45) !important;
+        border-radius: 8px !important;
+        color: #00e5ff !important;
+        box-shadow: 0 0 16px rgba(0, 229, 255, 0.3) !important;
+        margin-top: 6px !important;
+        margin-left: 10px !important;
+        transition: all 0.2s ease !important;
+    }
+    [data-testid="stSidebarCollapsedControl"]:hover {
+        background: rgba(0, 229, 255, 0.15) !important;
+        border-color: #00e5ff !important;
+        box-shadow: 0 0 22px rgba(0, 229, 255, 0.5) !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] button {
+        color: #00e5ff !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] svg {
+        fill: #00e5ff !important;
+        stroke: #00e5ff !important;
     }
 
     /* Sidebar */
     [data-testid="stSidebar"] {
         background: #030405 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    [data-testid="stSidebarCollapseButton"] button {
+        color: #00e5ff !important;
+    }
+    [data-testid="stSidebarCollapseButton"] svg {
+        fill: #00e5ff !important;
     }
 
     /* Equalizer Bar Animation */
@@ -402,6 +444,39 @@ with col_status:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+# Ingestion Quick-Control Bar on Main Page (Always Accessible even if sidebar is collapsed)
+with st.expander("Audio Ingestion Control // Upload Custom Audio File (.mp3, .wav) or Switch Preset", expanded=(source_choice == "Upload Audio (.mp3, .wav)")):
+    col_mode, col_input = st.columns([1, 2])
+    with col_mode:
+        main_source = st.radio(
+            "Source Mode",
+            ["Multicultural Presets", "Upload Audio (.mp3, .wav)"],
+            index=0 if source_choice == "Multicultural Presets" else 1,
+            key="main_source_select"
+        )
+    with col_input:
+        if main_source == "Multicultural Presets":
+            if diverse_tracks:
+                main_genre_opts = {f"{t['genre']} / {t['title']}": (t['filepath'], t['genre']) for t in diverse_tracks}
+                main_chosen = st.selectbox("Select Benchmark Track:", list(main_genre_opts.keys()), key="main_preset_box")
+                if main_source != source_choice or selected_audio_path is None:
+                    selected_audio_path = Path(main_genre_opts[main_chosen][0])
+                    genre_badge = main_genre_opts[main_chosen][1]
+                    audio_label = main_chosen.split(" / ")[1]
+        else:
+            main_upload = st.file_uploader(
+                "Upload Custom Audio Track (.mp3, .wav, .flac)",
+                type=["mp3", "wav", "ogg", "flac"],
+                key="main_uploader_box"
+            )
+            if main_upload is not None:
+                tmp_sfx = Path(main_upload.name).suffix
+                with tempfile.NamedTemporaryFile(delete=False, suffix=tmp_sfx) as tmp_f:
+                    tmp_f.write(main_upload.read())
+                    selected_audio_path = Path(tmp_f.name)
+                    audio_label = main_upload.name
+                    genre_badge = "Custom Input"
 
 st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
 
