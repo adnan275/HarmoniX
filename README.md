@@ -127,7 +127,7 @@ flowchart TB
 | **Aditya (Garariya)** | **Audio Spectroscopy & Dynamic Windowing** | `src/spectrogram_engine.py`<br/>`src/dynamic_windowing.py`<br/>`src/feature_extraction.py` | 128-Mel power spectrogram pipeline, Slaney frequency mapping, dynamic 50% overlapping segmentation, and training-time SpecAugment frequency/time masking. |
 | **Bhoomi** | **Deep Learning & Multimodal Fusion** | `src/models_cnn.py`<br/>`src/train_cnn.py`<br/>`src/train_ml.py` | 4-block PyTorch 2D-CNN architecture, multimodal late-fusion network, Apple Silicon MPS hardware acceleration, and correlation-regularized composite loss function. |
 | **Praanshu Ranjan** | **Deep Explainability & Theoretical Rigor** | `src/deep_explainability.py`<br/>`reports/figures_phase2/`<br/>`reports/phase2_interpretability_section.md` | Signed pre-sigmoid Grad-CAM, Integrated Gradients, exact 256-coalition Shapley values, weight randomization tests, and deletion faithfulness validation. |
-| **Vani** | **Evaluation, Ablation & Benchmark Suite** | `src/evaluate.py`<br/>`reports/phase2_cnn_ablation_results.csv`<br/>`reports/` | Cross-architecture ablation benchmarks (CNN vs. Fusion vs. ML), held-out test evaluation ($R^2$, Pearson $r$, Spearman $\rho$, MAE, RMSE), and IEEE technical reporting. |
+| **Vani** | **Benchmarking, Cross-Cultural Testing & Evaluation Lead** | `src/evaluate_phase2.py`<br/>`src/evaluate.py`<br/>`reports/cross_cultural_evaluation_report.md` | Consistent four-way benchmark evaluation (Ridge, RF, 2D-CNN, Hybrid Fusion), empirical cross-cultural evaluation suite across 5 traditions, acoustic domain shift analysis, and benchmark metric reporting. |
 
 ---
 
@@ -363,12 +363,16 @@ AIML_project/
 │   ├── data_loader.py               # [Adnan] Audio ingestion & zero-leakage splits
 │   ├── train_ml.py                  # [Bhoomi] Phase 1 classical ML training
 │   ├── feature_analysis.py          # [Praanshu] Phase 1 statistical & SHAP feature analysis
-│   └── evaluate.py                  # [Vani] Test evaluation benchmarks & residual diagnostics
+│   ├── evaluate.py                  # [Vani] Phase 1 test evaluation & residual diagnostics
+│   └── evaluate_phase2.py           # [Vani] Phase 2 four-way benchmark & cross-cultural evaluation suite
 ├── reports/
 │   ├── figures/                     # 19 Phase 1 high-resolution publication figures
-│   ├── figures_phase2/              # 16 Phase 2 Grad-CAM, Shapley, and XAI figures
+│   ├── figures_phase2/              # 20 Phase 2 Grad-CAM, Shapley, and benchmark evaluation figures
 │   ├── phase2_cnn_ablation_results.csv # Phase 2 ablation comparison table
-│   └── phase2_interpretability_section.md # Complete XAI mathematical writeup
+│   ├── phase2_benchmark_four_way_comparison.csv # [Vani] Master 4-way comparison table
+│   ├── phase2_cross_cultural_evaluation.csv     # [Vani] Cross-cultural evaluation table
+│   ├── cross_cultural_evaluation_report.md      # [Vani] In-depth cross-cultural & domain shift report
+│   └── phase2_interpretability_section.md       # Complete XAI mathematical writeup
 ├── requirements.txt                 # Dependencies (PyTorch, Librosa, Streamlit, etc.)
 └── README.md                        # Project documentation
 ```

@@ -1,0 +1,7 @@
+Model,Architecture_Type,Input_Modality,Test_N,Val_R2,Test_R2,Test_RMSE,Test_MAE,Test_Pearson_r,Test_Pearson_CI,Test_Spearman_rho,Target_R2_gt_0.50,Role
+Ridge,Linear Regularized,34 Tabular DSP Descriptors,116,0.4123,0.3994,0.1356,0.1075,0.639,"[0.5169, 0.7356]",0.6514,False,Phase 1 Linear Baseline
+Random_Forest,Non-linear Ensemble,34 Tabular DSP Descriptors,116,0.432,0.4183,0.1334,0.1096,0.6709,"[0.5567, 0.7602]",0.6934,False,Phase 1 Champion
+CNN_Only,Deep 2D-CNN (4 Conv Blocks),128-Mel Log Spectrogram,9,0.9418,0.9498,0.0561,0.0486,0.9786,"[0.8983, 0.9956]",0.7625,True,Phase 2 Deep Baseline
+Hybrid_Fusion,Multimodal Late-Fusion (CNN + MLP),Spectrogram + 8 Physics Descriptors,9,0.9345,0.9535,0.054,0.0454,0.9798,"[0.9038, 0.9959]",0.9221,True,Phase 2 Champion SOTA
+Hybrid_MSE_Baseline,"Multimodal Late-Fusion (MSE Loss, lambda=0)",Spectrogram + 8 Physics Descriptors,9,0.9344,0.9386,0.062,0.0533,0.9795,"[0.9024, 0.9958]",0.9221,True,Loss Regularization Ablation
+XGBoost,Gradient Boosted Trees,34 Tabular DSP Descriptors,116,0.4464,0.3765,0.1382,0.1107,0.6204,"[0.494, 0.7212]",0.6424,False,Phase 1 Tree Boosting

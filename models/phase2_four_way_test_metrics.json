@@ -1,0 +1,258 @@
+{
+  "benchmark_summary": {
+    "models": {
+      "Ridge": {
+        "Model": "Ridge",
+        "Architecture_Type": "Linear Regularized",
+        "Input_Modality": "34 Tabular DSP Descriptors",
+        "Test_N": 116,
+        "Val_R2": 0.4123,
+        "Test_R2": 0.3994,
+        "Test_RMSE": 0.1356,
+        "Test_MAE": 0.1075,
+        "Test_Pearson_r": 0.639,
+        "Test_Pearson_CI": "[0.5169, 0.7356]",
+        "Test_Spearman_rho": 0.6514,
+        "Target_R2_gt_0.50": false,
+        "Role": "Phase 1 Linear Baseline"
+      },
+      "Random_Forest": {
+        "Model": "Random_Forest",
+        "Architecture_Type": "Non-linear Ensemble",
+        "Input_Modality": "34 Tabular DSP Descriptors",
+        "Test_N": 116,
+        "Val_R2": 0.432,
+        "Test_R2": 0.4183,
+        "Test_RMSE": 0.1334,
+        "Test_MAE": 0.1096,
+        "Test_Pearson_r": 0.6709,
+        "Test_Pearson_CI": "[0.5567, 0.7602]",
+        "Test_Spearman_rho": 0.6934,
+        "Target_R2_gt_0.50": false,
+        "Role": "Phase 1 Champion"
+      },
+      "CNN_Only": {
+        "Model": "CNN_Only",
+        "Architecture_Type": "Deep 2D-CNN (4 Conv Blocks)",
+        "Input_Modality": "128-Mel Log Spectrogram",
+        "Test_N": 9,
+        "Val_R2": 0.9418,
+        "Test_R2": 0.9498,
+        "Test_RMSE": 0.0561,
+        "Test_MAE": 0.0486,
+        "Test_Pearson_r": 0.9786,
+        "Test_Pearson_CI": "[0.8983, 0.9956]",
+        "Test_Spearman_rho": 0.7625,
+        "Target_R2_gt_0.50": true,
+        "Role": "Phase 2 Deep Baseline"
+      },
+      "Hybrid_Fusion": {
+        "Model": "Hybrid_Fusion",
+        "Architecture_Type": "Multimodal Late-Fusion (CNN + MLP)",
+        "Input_Modality": "Spectrogram + 8 Physics Descriptors",
+        "Test_N": 9,
+        "Val_R2": 0.9345,
+        "Test_R2": 0.9535,
+        "Test_RMSE": 0.054,
+        "Test_MAE": 0.0454,
+        "Test_Pearson_r": 0.9798,
+        "Test_Pearson_CI": "[0.9038, 0.9959]",
+        "Test_Spearman_rho": 0.9221,
+        "Target_R2_gt_0.50": true,
+        "Role": "Phase 2 Champion SOTA"
+      },
+      "Hybrid_MSE_Baseline": {
+        "Model": "Hybrid_MSE_Baseline",
+        "Architecture_Type": "Multimodal Late-Fusion (MSE Loss, lambda=0)",
+        "Input_Modality": "Spectrogram + 8 Physics Descriptors",
+        "Test_N": 9,
+        "Val_R2": 0.9344,
+        "Test_R2": 0.9386,
+        "Test_RMSE": 0.062,
+        "Test_MAE": 0.0533,
+        "Test_Pearson_r": 0.9795,
+        "Test_Pearson_CI": "[0.9024, 0.9958]",
+        "Test_Spearman_rho": 0.9221,
+        "Target_R2_gt_0.50": true,
+        "Role": "Loss Regularization Ablation"
+      },
+      "XGBoost": {
+        "Model": "XGBoost",
+        "Architecture_Type": "Gradient Boosted Trees",
+        "Input_Modality": "34 Tabular DSP Descriptors",
+        "Test_N": 116,
+        "Val_R2": 0.4464,
+        "Test_R2": 0.3765,
+        "Test_RMSE": 0.1382,
+        "Test_MAE": 0.1107,
+        "Test_Pearson_r": 0.6204,
+        "Test_Pearson_CI": "[0.494, 0.7212]",
+        "Test_Spearman_rho": 0.6424,
+        "Target_R2_gt_0.50": false,
+        "Role": "Phase 1 Tree Boosting"
+      }
+    },
+    "four_way_core": [
+      "Ridge",
+      "Random_Forest",
+      "CNN_Only",
+      "Hybrid_Fusion"
+    ],
+    "primary_champion": "Hybrid_Fusion",
+    "baseline_champion": "Random_Forest",
+    "relative_r2_improvement_pct": 127.95,
+    "relative_mae_reduction_pct": 58.58,
+    "spearman_rho_gain_vs_cnn": 0.1596
+  },
+  "models_evaluated": [
+    "Ridge",
+    "Random_Forest",
+    "CNN_Only",
+    "Hybrid_Fusion",
+    "Hybrid_MSE_Baseline",
+    "XGBoost"
+  ],
+  "core_four_way": [
+    "Ridge",
+    "Random_Forest",
+    "CNN_Only",
+    "Hybrid_Fusion"
+  ],
+  "metrics_table": [
+    {
+      "Model": "Ridge",
+      "Architecture_Type": "Linear Regularized",
+      "Input_Modality": "34 Tabular DSP Descriptors",
+      "Test_N": 116,
+      "Val_R2": 0.4123,
+      "Test_R2": 0.3994,
+      "Test_RMSE": 0.1356,
+      "Test_MAE": 0.1075,
+      "Test_Pearson_r": 0.639,
+      "Test_Pearson_CI": "[0.5169, 0.7356]",
+      "Test_Spearman_rho": 0.6514,
+      "Target_R2_gt_0.50": false,
+      "Role": "Phase 1 Linear Baseline"
+    },
+    {
+      "Model": "Random_Forest",
+      "Architecture_Type": "Non-linear Ensemble",
+      "Input_Modality": "34 Tabular DSP Descriptors",
+      "Test_N": 116,
+      "Val_R2": 0.432,
+      "Test_R2": 0.4183,
+      "Test_RMSE": 0.1334,
+      "Test_MAE": 0.1096,
+      "Test_Pearson_r": 0.6709,
+      "Test_Pearson_CI": "[0.5567, 0.7602]",
+      "Test_Spearman_rho": 0.6934,
+      "Target_R2_gt_0.50": false,
+      "Role": "Phase 1 Champion"
+    },
+    {
+      "Model": "CNN_Only",
+      "Architecture_Type": "Deep 2D-CNN (4 Conv Blocks)",
+      "Input_Modality": "128-Mel Log Spectrogram",
+      "Test_N": 9,
+      "Val_R2": 0.9418,
+      "Test_R2": 0.9498,
+      "Test_RMSE": 0.0561,
+      "Test_MAE": 0.0486,
+      "Test_Pearson_r": 0.9786,
+      "Test_Pearson_CI": "[0.8983, 0.9956]",
+      "Test_Spearman_rho": 0.7625,
+      "Target_R2_gt_0.50": true,
+      "Role": "Phase 2 Deep Baseline"
+    },
+    {
+      "Model": "Hybrid_Fusion",
+      "Architecture_Type": "Multimodal Late-Fusion (CNN + MLP)",
+      "Input_Modality": "Spectrogram + 8 Physics Descriptors",
+      "Test_N": 9,
+      "Val_R2": 0.9345,
+      "Test_R2": 0.9535,
+      "Test_RMSE": 0.054,
+      "Test_MAE": 0.0454,
+      "Test_Pearson_r": 0.9798,
+      "Test_Pearson_CI": "[0.9038, 0.9959]",
+      "Test_Spearman_rho": 0.9221,
+      "Target_R2_gt_0.50": true,
+      "Role": "Phase 2 Champion SOTA"
+    },
+    {
+      "Model": "Hybrid_MSE_Baseline",
+      "Architecture_Type": "Multimodal Late-Fusion (MSE Loss, lambda=0)",
+      "Input_Modality": "Spectrogram + 8 Physics Descriptors",
+      "Test_N": 9,
+      "Val_R2": 0.9344,
+      "Test_R2": 0.9386,
+      "Test_RMSE": 0.062,
+      "Test_MAE": 0.0533,
+      "Test_Pearson_r": 0.9795,
+      "Test_Pearson_CI": "[0.9024, 0.9958]",
+      "Test_Spearman_rho": 0.9221,
+      "Target_R2_gt_0.50": true,
+      "Role": "Loss Regularization Ablation"
+    },
+    {
+      "Model": "XGBoost",
+      "Architecture_Type": "Gradient Boosted Trees",
+      "Input_Modality": "34 Tabular DSP Descriptors",
+      "Test_N": 116,
+      "Val_R2": 0.4464,
+      "Test_R2": 0.3765,
+      "Test_RMSE": 0.1382,
+      "Test_MAE": 0.1107,
+      "Test_Pearson_r": 0.6204,
+      "Test_Pearson_CI": "[0.494, 0.7212]",
+      "Test_Spearman_rho": 0.6424,
+      "Target_R2_gt_0.50": false,
+      "Role": "Phase 1 Tree Boosting"
+    }
+  ],
+  "cross_cultural_domain_results": {
+    "Bollywood": {
+      "n_tracks": 2,
+      "mean_model_spread": 0.4783,
+      "mean_domain_shift_z": 1.2219,
+      "mean_hybrid_error": 0.2128,
+      "mean_rf_error": 0.2447
+    },
+    "Indian Classical": {
+      "n_tracks": 3,
+      "mean_model_spread": 0.4818,
+      "mean_domain_shift_z": 3.3038,
+      "mean_hybrid_error": 0.2977,
+      "mean_rf_error": 0.1268
+    },
+    "Punjabi": {
+      "n_tracks": 1,
+      "mean_model_spread": 0.473,
+      "mean_domain_shift_z": 17.76,
+      "mean_hybrid_error": 0.0893,
+      "mean_rf_error": 0.3837
+    },
+    "Sufi": {
+      "n_tracks": 1,
+      "mean_model_spread": 0.3738,
+      "mean_domain_shift_z": 6.4555,
+      "mean_hybrid_error": 0.2495,
+      "mean_rf_error": 0.1243
+    },
+    "Western": {
+      "n_tracks": 2,
+      "mean_model_spread": 0.2911,
+      "mean_domain_shift_z": 1.1082,
+      "mean_hybrid_error": 0.1668,
+      "mean_rf_error": 0.2607
+    }
+  },
+  "cross_cultural_tracks_evaluated": 9,
+  "figures_generated": [
+    "/Users/vanivashishtha/Downloads/HarmoniX/reports/figures_phase2/10_four_way_test_parity.png",
+    "/Users/vanivashishtha/Downloads/HarmoniX/reports/figures_phase2/11_model_consensus_benchmark.png",
+    "/Users/vanivashishtha/Downloads/HarmoniX/reports/figures_phase2/12_cross_cultural_domain_shift.png",
+    "/Users/vanivashishtha/Downloads/HarmoniX/reports/figures_phase2/13_cross_cultural_acoustic_divergence.png"
+  ],
+  "status": "success"
+}
