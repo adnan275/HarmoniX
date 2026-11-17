@@ -23,16 +23,16 @@
   },
   "split_counts": {
     "train": {
-      "n_songs": 42,
-      "n_windows": 126
+      "n_songs": 536,
+      "n_windows": 13571
     },
     "val": {
-      "n_songs": 9,
-      "n_windows": 27
+      "n_songs": 115,
+      "n_windows": 3110
     },
     "test": {
-      "n_songs": 9,
-      "n_windows": 27
+      "n_songs": 116,
+      "n_windows": 2876
     }
   },
   "best_lambda_corr": 0.05,
@@ -99,53 +99,53 @@
     "CNN_Only": {
       "model_type": "cnn_only",
       "lambda_corr": 0.05,
-      "best_epoch": 14,
-      "train_time_sec": 8.75,
+      "best_epoch": 29,
+      "train_time_sec": 1245.13,
       "val_evaluation": {
         "split": "val",
-        "n_songs": 9,
-        "n_windows": 27,
-        "window_loss": 0.005165,
-        "window_mse": 0.0037,
+        "n_songs": 115,
+        "n_windows": 3110,
+        "window_loss": 0.042039,
+        "window_mse": 0.015565,
         "primary_target": "valence",
         "metrics": {
-          "MAE": 0.0538,
-          "RMSE": 0.0608,
-          "R2": 0.9418,
-          "Pearson_r": 0.9707,
-          "Spearman_rho": 0.7769
+          "MAE": 0.0881,
+          "RMSE": 0.1124,
+          "R2": 0.5586,
+          "Pearson_r": 0.7525,
+          "Spearman_rho": 0.7421
         },
         "per_target_metrics": {
           "valence": {
-            "MAE": 0.0538,
-            "RMSE": 0.0608,
-            "R2": 0.9418,
-            "Pearson_r": 0.9707,
-            "Spearman_rho": 0.7769
+            "MAE": 0.0881,
+            "RMSE": 0.1124,
+            "R2": 0.5586,
+            "Pearson_r": 0.7525,
+            "Spearman_rho": 0.7421
           }
         }
       },
       "test_evaluation": {
         "split": "test",
-        "n_songs": 9,
-        "n_windows": 27,
-        "window_loss": 0.004216,
-        "window_mse": 0.003145,
+        "n_songs": 116,
+        "n_windows": 2876,
+        "window_loss": 0.04836,
+        "window_mse": 0.019227,
         "primary_target": "valence",
         "metrics": {
-          "MAE": 0.0486,
-          "RMSE": 0.0561,
-          "R2": 0.9498,
-          "Pearson_r": 0.9786,
-          "Spearman_rho": 0.7625
+          "MAE": 0.0952,
+          "RMSE": 0.1218,
+          "R2": 0.5151,
+          "Pearson_r": 0.749,
+          "Spearman_rho": 0.7618
         },
         "per_target_metrics": {
           "valence": {
-            "MAE": 0.0486,
-            "RMSE": 0.0561,
-            "R2": 0.9498,
-            "Pearson_r": 0.9786,
-            "Spearman_rho": 0.7625
+            "MAE": 0.0952,
+            "RMSE": 0.1218,
+            "R2": 0.5151,
+            "Pearson_r": 0.749,
+            "Spearman_rho": 0.7618
           }
         }
       }
@@ -153,107 +153,53 @@
     "Hybrid_Fusion": {
       "model_type": "hybrid_fusion",
       "lambda_corr": 0.05,
-      "best_epoch": 6,
-      "train_time_sec": 6.19,
+      "best_epoch": 24,
+      "train_time_sec": 1165.91,
       "val_evaluation": {
         "split": "val",
-        "n_songs": 9,
-        "n_windows": 27,
-        "window_loss": 0.005785,
-        "window_mse": 0.004249,
+        "n_songs": 115,
+        "n_windows": 3110,
+        "window_loss": 0.044644,
+        "window_mse": 0.016598,
         "primary_target": "valence",
         "metrics": {
-          "MAE": 0.0534,
-          "RMSE": 0.0645,
-          "R2": 0.9345,
-          "Pearson_r": 0.97,
-          "Spearman_rho": 0.7769
+          "MAE": 0.0907,
+          "RMSE": 0.1173,
+          "R2": 0.5193,
+          "Pearson_r": 0.7285,
+          "Spearman_rho": 0.7377
         },
         "per_target_metrics": {
           "valence": {
-            "MAE": 0.0534,
-            "RMSE": 0.0645,
-            "R2": 0.9345,
-            "Pearson_r": 0.97,
-            "Spearman_rho": 0.7769
+            "MAE": 0.0907,
+            "RMSE": 0.1173,
+            "R2": 0.5193,
+            "Pearson_r": 0.7285,
+            "Spearman_rho": 0.7377
           }
         }
       },
       "test_evaluation": {
         "split": "test",
-        "n_songs": 9,
-        "n_windows": 27,
-        "window_loss": 0.004084,
-        "window_mse": 0.003028,
+        "n_songs": 116,
+        "n_windows": 2876,
+        "window_loss": 0.05001,
+        "window_mse": 0.018807,
         "primary_target": "valence",
         "metrics": {
-          "MAE": 0.0454,
-          "RMSE": 0.054,
-          "R2": 0.9535,
-          "Pearson_r": 0.9798,
-          "Spearman_rho": 0.9221
+          "MAE": 0.094,
+          "RMSE": 0.1203,
+          "R2": 0.5272,
+          "Pearson_r": 0.7387,
+          "Spearman_rho": 0.7496
         },
         "per_target_metrics": {
           "valence": {
-            "MAE": 0.0454,
-            "RMSE": 0.054,
-            "R2": 0.9535,
-            "Pearson_r": 0.9798,
-            "Spearman_rho": 0.9221
-          }
-        }
-      }
-    },
-    "Hybrid_Fusion_MSE_Baseline": {
-      "model_type": "hybrid_fusion",
-      "lambda_corr": 0.0,
-      "best_epoch": 13,
-      "train_time_sec": 18.11,
-      "val_evaluation": {
-        "split": "val",
-        "n_songs": 9,
-        "n_windows": 27,
-        "window_loss": 0.00425,
-        "window_mse": 0.00425,
-        "primary_target": "valence",
-        "metrics": {
-          "MAE": 0.0594,
-          "RMSE": 0.0646,
-          "R2": 0.9344,
-          "Pearson_r": 0.9703,
-          "Spearman_rho": 0.7769
-        },
-        "per_target_metrics": {
-          "valence": {
-            "MAE": 0.0594,
-            "RMSE": 0.0646,
-            "R2": 0.9344,
-            "Pearson_r": 0.9703,
-            "Spearman_rho": 0.7769
-          }
-        }
-      },
-      "test_evaluation": {
-        "split": "test",
-        "n_songs": 9,
-        "n_windows": 27,
-        "window_loss": 0.003947,
-        "window_mse": 0.003947,
-        "primary_target": "valence",
-        "metrics": {
-          "MAE": 0.0533,
-          "RMSE": 0.062,
-          "R2": 0.9386,
-          "Pearson_r": 0.9795,
-          "Spearman_rho": 0.9221
-        },
-        "per_target_metrics": {
-          "valence": {
-            "MAE": 0.0533,
-            "RMSE": 0.062,
-            "R2": 0.9386,
-            "Pearson_r": 0.9795,
-            "Spearman_rho": 0.9221
+            "MAE": 0.094,
+            "RMSE": 0.1203,
+            "R2": 0.5272,
+            "Pearson_r": 0.7387,
+            "Spearman_rho": 0.7496
           }
         }
       }

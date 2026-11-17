@@ -45,5 +45,9 @@ Thumbs.db
 # Auto-sync scripts, logs & runtime
 auto_sync.sh
 .auto_sync*
+.code_snapshot*
+data/raw/PMEmo*
+data/processed/*
+
 
 
